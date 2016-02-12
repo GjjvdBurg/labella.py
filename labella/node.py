@@ -42,7 +42,7 @@ class Node(object):
     def displacement(self):
         return self.idealPos - self.currentPos
 
-    def overlapWithNode(self, node, buf):
+    def overlapWithNode(self, node, buf=None):
         _buffer = buf if buf else 0
         return self.distanceFrom(node) - _buffer < 0
 
@@ -51,11 +51,11 @@ class Node(object):
         return ((pos >= self.currentPos - halfWidth) and (pos <=
             self.currentPos + halfWidth))
 
-    def positionBefore(self, node, buf):
+    def positionBefore(self, node, buf=None):
         _buffer = buf if buf else 0
         return node.currentLeft() - self.width/2 - _buffer
 
-    def positionAfter(self, node, buf):
+    def positionAfter(self, node, buf=None):
         _buffer = buf if buf else 0
         return node.currentRight() + self.width/2 + _buffer
 
@@ -77,7 +77,7 @@ class Node(object):
             self.parent = None
         return self
 
-    def createStub(self, width):
+    def createStub(self, width=None):
         stub = Node(self.idealPos, width, self.data)
         stub.currentPos = self.currentPos
         stub.child = self
@@ -97,6 +97,16 @@ class Node(object):
 
     def getPathFromRoot(self):
         return list(reversed(self.getPathToRoot()))
+
+    def getPathToRootLength(self):
+        length = 0
+        current = self
+        while current:
+            targetPos = (current.parent.currentPos if current.parent else 
+                    current.idealPos)
+            length += abs(current.currentPos - targetPos)
+            current = current.parent
+        return length
 
     def getRoot(self):
         previous = self
