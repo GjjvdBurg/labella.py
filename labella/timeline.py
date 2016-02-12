@@ -1,6 +1,7 @@
 
 """
-This class is not included in the original Labella.js.
+This class is not included in the original Labella.js, but is loosely modelled 
+on https://kristw.github.io/d3kit-timeline/
 
 The idea is to make a simple timeline of objects which have text or no text.
 Items must be added as either:
