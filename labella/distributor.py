@@ -86,11 +86,6 @@ class Distributor(object):
         puntedNodes = nodes[:]
         puntedWidth = self.computeRequiredWidth(puntedNodes)
 
-        print("in algorithm_overlap, before while:")
-        print("maxWidth: %r" % maxWidth)
-        print("puntedNodes: %r" % puntedNodes)
-        print("puntedWidth: %r" % puntedWidth)
-
         while puntedWidth > maxWidth:
             self.countIdealOverlaps(puntedNodes)
 
@@ -104,15 +99,8 @@ class Distributor(object):
                 nodesInCurrentLayer.sort(key=lambda x : x.overlapCount,
                         reverse=True)
 
-                for node in nodesInCurrentLayer:
-                    print(node)
-                    print(node.overlapCount)
-
                 # Remove the node with the most overlap
                 first = nodesInCurrentLayer.pop(0)
-                print("First = %r, with overlapCount = %i, width = %r, %r" % 
-                        (first, first.overlapCount, first.width, 
-                            first.overlaps))
 
                 # Update width
                 currentLayerWidth -= first.width
@@ -127,10 +115,6 @@ class Distributor(object):
             layers.append(nodesInCurrentLayer)
 
             puntedWidth = self.computeRequiredWidth(puntedNodes)
-
-        print("in algorithm_overlap, after while:")
-        print("puntedNodes: %r" % puntedNodes)
-        print("puntedWidth: %r" % puntedWidth)
 
         if len(puntedNodes) > 0:
             layers.append(puntedNodes)
