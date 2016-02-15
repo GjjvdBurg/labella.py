@@ -66,6 +66,4 @@ def removeOverlap(nodes, options):
     for v in variables:
         v.node.currentPos = round(v.position())
 
-    # TODO: check if this returns the updated nodes
     return nodes
-

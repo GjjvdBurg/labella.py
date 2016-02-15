@@ -22,7 +22,7 @@ class Force(object):
 
     def set_options(self, x=None):
         if x is None:
-            return
+            x = {}
         self.options.update(x)
 
         disOptions = {k:v for k,v in self.options.items() if k in 
@@ -53,11 +53,6 @@ class Force(object):
             node.removeStub()
 
         layers = self.distributor.distribute(self._nodes)
-        print("Debug: after distribute")
-        for i, layer in enumerate(layers):
-            print("layer %i" % i)
-            for j, node in enumerate(layer):
-                print(j, node)
         for layerIndex, nodes in enumerate(layers):
             for node in nodes:
                 node.layerIndex = layerIndex
