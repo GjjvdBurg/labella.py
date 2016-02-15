@@ -43,6 +43,13 @@ class Constraint(object):
         return (self.right.scale * self.right.position() - self.gap -
                 self.left.scale * self.left.position())
 
+    def __repr__(self):
+        s = ("Constraint(left=%r, right=%r, gap=%r, equality=%r)" % 
+                (self.left, self.right, self.gap, self.equality))
+        return s
+    def __str__(self):
+        return repr(self)
+
 class Variable(object):
     def __init__(self, desiredPosition, weight=None, scale=None):
         if weight is None:
@@ -69,6 +76,13 @@ class Variable(object):
             ff(c, c.right)
         for c in self.cIn:
             ff(c, c.left)
+
+    def __repr__(self):
+        s = ("Variable(desiredPos=%r, weight=%r, scale=%r, offset=%r)" % 
+                (self.desiredPosition, self.weight, self.scale, self.offset))
+        return s
+    def __str__(self):
+        return repr(self)
 
 class Block(object):
     def __init__(self, v):
