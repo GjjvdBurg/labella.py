@@ -65,8 +65,6 @@ def draw_svg(renderer, nodes, options, fname, direction, show_line=True,
         colordots=False):
     # add x, y, dx, dy to nodes
     renderer.layout(nodes)
-    for node in nodes:
-        print(node.idealPos, node.currentPos)
 
     innerWidth = (options['initialWidth'] - options['margin']['left'] - 
             options['margin']['right'])

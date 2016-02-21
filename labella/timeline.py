@@ -1,12 +1,12 @@
 
 """
-This class is not included in the original Labella.js, but is loosely modelled 
-on https://kristw.github.io/d3kit-timeline/
+This class is not included in the original Labella.js, but is partially 
+modelled on https://kristw.github.io/d3kit-timeline/
 
 The idea is to make a simple timeline of objects which have text or no text.
 Items must be added as either:
 
-    dicts: {'time': value, 'width': int, 'name': str} where the 'name' field
+    dicts: {'time': value, 'width': int, 'text': str} where the 'text' field
     and the 'width' field are optional and the value field can be either a
     date(time) instance or a float. The type must be the same for all values.
 
@@ -21,12 +21,15 @@ or as
 """
 
 import datetime
+import math
 
 from xml.etree import ElementTree
 
 from labella.force import Force
 from labella.node import Node
 from labella.renderer import Renderer
+from labella.scale import TimeScale, d3_extent
+from labella.tex import text_dimensions
 from labella.utils import hex2rgbstr
 
 DEFAULT_WIDTH = 50
@@ -35,54 +38,60 @@ DEFAULT_OPTIONS = {
         'margin': {'left': 20, 'right': 20, 'top': 20, 'bottom': 20},
         'initialWidth': 400,
         'initialHeight': 400,
-        'scale': None,
+        'scale': TimeScale,
         'domain': None,
         'direction': 'right',
         'dotRadius': 3,
         'layerGap': 60,
         'labella': {},
         'keyFn': None,
-        'timeFn': None,
-        'textFn': None,
-        'dotColor': '#222222',
-        'labelBgColor': '#222222',
-        'labelTextColor': '#ffffff',
-        'linkColor': '#222222',
+        'timeFn': lambda d: d['time'],
+        'textFn': lambda d: d['text'],
+        'dotColor': '#222',
+        'labelBgColor': '#222',
+        'labelTextColor': '#fff',
+        'linkColor': '#222',
         'labelPadding': {'left': 4, 'right': 4, 'top': 3, 'bottom': 2},
+        'textXOffset': '0.2em',
         'textYOffset': '0.85em',
         }
 
 class Item(object):
-    def __init__(self, time, width=DEFAULT_WIDTH, name=None,
-            numeric_value=None, data=None):
+    def __init__(self, time, width=DEFAULT_WIDTH, text=None,
+            numeric_value=None, data=None, output_mode='svg'):
         self.time = time
-        self.name = name
+        self.text = text
         self.numeric_value = numeric_value
         self.width = width
-        if self.width is None and self.name:
-            self.width = self.magic_width_function(self.name)
-        self.height = self.magic_height_function(self.name)
         self.data = data
+        self.output_mode = output_mode
+        if self.width is None and self.text:
+            self.width, self.height = self.get_text_dimensions(output_mode)
+        else:
+            self.height = 13.0
 
-    def to_node(self, output_mode):
+    def to_node(self):
         return Node(self.numeric_value, self.width, data=self)
 
-    def magic_width_function(self, text):
-        return len(text) * 8.0
-
-    def magic_height_function(self, text):
-        return 12.0
+    def get_text_dimensions(self, fontsize='11pt'):
+        if self.output_mode == 'svg':
+            width, height = text_dimensions(self.text, fontsize='12pt')
+            width = math.ceil(width)
+            height = 14.0
+        else:
+            width, height = text_dimensions(self.text, fontsize=fontsize)
+        return width, height
 
     def __str__(self):
-        s = ("Item(time=%r, name=%r, numeric_value=%r, width=%r,"
-                " height=%r, data=%r)" % (self.time, self.name, 
+        s = ("Item(time=%r, text=%r, numeric_value=%r, width=%r,"
+                " height=%r, data=%r)" % (self.time, self.text, 
                     self.numeric_value, self.width, self.height, self.data))
         return s
     def __repr__(self):
         return str(self)
 
 class Timeline(object):
-    def __init__(self, items, options=None):
+    def __init__(self, dicts, options=None):
         # update timeline options
         self.options = {k:v for k,v in DEFAULT_OPTIONS.items()}
         if options:
@@ -90,33 +99,26 @@ class Timeline(object):
         self.direction = self.options['direction']
         self.options['labella']['direction'] = self.direction
         # parse items
-        self.items = self.parse_items(items)
+        self.items = self.parse_items(dicts)
+        self.rotate_items()
 
-    def parse_items(self, items):
-        if isinstance(items[0], dict):
-            assert(all([isinstance(x, dict) for x in items]))
-            return self.parse_dicts(items)
-        elif isinstance(items[0], datetime.datetime):
-            assert(all([isinstance(x, datetime.datetime) for x in items]))
-            return self.parse_datetimes(items)
-        elif isinstance(items[0], datetime.date):
-            assert(all([isinstance(x, datetime.date) for x in items]))
-            return self.parse_dates(items)
-        else:
-            return self.parse_numbers(items)
+    def rotate_items(self):
+        if self.direction in ['left', 'right']:
+            for item in self.items:
+                if item.text:
+                    item.height, item.width = item.width, item.height
 
-    def parse_dicts(self, dicts):
+    def parse_items(self, dicts):
         items = []
         for d in dicts:
             time = d['time']
-            name = d.get('name', None)
-            if name:
+            text = self.textFn(d)
+            if text:
                 width = d.get('width', None)
             else:
                 width = d.get('width', DEFAULT_WIDTH)
-            it = self.parse_time(time, width=width, name=name, data=d)
+            it = self.parse_time(time, width=width, text=text, data=d)
             items.append(it)
-        #self.scale_items(items)
         return items
 
     def scale_items(self, items):
@@ -131,31 +133,30 @@ class Timeline(object):
             else:
                 it.numeric_value = num_val * innerHeight
 
-    def parse_time(self, time, width=None, name=None, data=None):
+    def init_axis(self, data):
+        if self.options['domain']:
+            self.options['scale'].domain(self.options['domain'])
+        else:
+            self.options['scale'].domain(d3_extent(data, 
+                self.options['timeFn']))
+            self.options['scale'].nice()
+        innerWidth, innerHeight = self.getInnerDims()
+        if self.options['direction'] in ['left', 'right']:
+            self.options['scale'].set_range([0, innerHeight])
+        else:
+            self.options['scale'].set_range([0, innerWidth])
+
+    def parse_time(self, time, width=None, text=None, data=None):
         if isinstance(time, datetime.datetime):
-            it = Item(time, numeric_value=time.timestamp(), name=name,
+            it = Item(time, numeric_value=time.timestamp(), text=text,
                     width=width, data=data)
         elif isinstance(time, datetime.date):
-            it = Item(time, numeric_value=time.toordinal(), name=name,
+            it = Item(time, numeric_value=time.toordinal(), text=text,
                     width=width, data=data)
         else:
-            it = Item(time, numeric_value=time, name=name, width=width,
+            it = Item(time, numeric_value=time, text=text, width=width,
                     data=data)
         return it
-
-    def parse_datetimes(self, datetimes):
-        innerWidth, innerHeight = self.getInnerDims()
-        items = [self.parse_time(dt) for dt in datetimes]
-        return items
-
-    def parse_dates(self, dates):
-        innerWidth, innerHeight = self.getInnerDims()
-        items = [self.parse_time(d) for d in dates]
-        return items
-
-    def parse_numbers(self, numbers):
-        items = [self.parse_time(n) for n in numbers]
-        return items
 
     def getInnerDims(self):
         innerWidth = (self.options['initialWidth'] -
@@ -166,8 +167,8 @@ class Timeline(object):
                 self.options['margin']['bottom'])
         return innerWidth, innerHeight
 
-    def get_nodes(self, output_mode):
-        nodes = [it.to_node(output_mode) for it in self.items]
+    def get_nodes(self):
+        nodes = [it.to_node() for it in self.items]
         for node in nodes:
             node.w = (node.data.width + self.options['labelPadding']['left'] +
                     self.options['labelPadding']['right'])
@@ -177,8 +178,8 @@ class Timeline(object):
                 node.h, node.w = node.w, node.h
         return nodes
 
-    def compute(self, output_mode):
-        nodes = self.get_nodes(output_mode)
+    def compute(self):
+        nodes = self.get_nodes()
         renderer = Renderer(self.options['labella'])
         renderer.layout(nodes)
         force = Force(self.options['labella'])
@@ -186,11 +187,40 @@ class Timeline(object):
         force.compute()
         newnodes = force.nodes()
         renderer.layout(newnodes)
-        from pprint import pprint
-        pprint(force.options)
-        pprint(renderer.options)
-        pprint(newnodes)
         return newnodes, renderer
+
+    def labelBgColor(self, idx):
+        if isinstance(self.options['labelBgColor'], str):
+            return self.options['labelBgColor']
+        return self.options['labelBgColor'](idx)
+
+    def labelTextColor(self, idx):
+        if isinstance(self.options['labelTextColor'], str):
+            return self.options['labelTextColor']
+        return self.options['labelTextColor'](idx)
+
+    def textFn(self, thedict):
+        if not 'text' in thedict:
+            return None
+        if self.options['textFn'] is None:
+            return thedict.get('text', None)
+        return self.options['textFn'](thedict)
+
+    def nodePos(self, d, nodeHeight):
+        if self.direction == 'right':
+            return 'translate(%i, %i)' % (d.x, d.y - d.dy/2)
+        elif self.direction == 'left':
+            return 'translate(%i, %i)' % (d.x - d.w + d.dx,
+                    d.y - d.dy/2)
+        elif self.direction == 'up':
+            return 'translate(%i, %i)' % (d.x - d.dx/2, d.y)
+        elif self.direction == 'down':
+            return 'translate(%i, %i)' % (d.x - d.dx/2, d.y)
+
+    def timePos(self, thedict):
+        if self.options['scale'] is None:
+            return self.options['timeFn'](thedict)
+        return self.options['scale'](self.options['timeFn'](thedict))
 
 class TimelineSVG(Timeline):
     def __init__(self, items, options=None):
@@ -199,7 +229,7 @@ class TimelineSVG(Timeline):
         super().__init__(items, options=options)
 
     def export(self, filename):
-        self.nodes, self.renderer = self.compute('svg')
+        self.nodes, self.renderer = self.compute()
         initWidth, initHeight = (self.options['initialWidth'],
                 self.options['initialHeight'])
         doc = ElementTree.Element('svg', width=str(initWidth),
@@ -274,37 +304,10 @@ class TimelineSVG(Timeline):
         for i, node in enumerate(self.nodes):
             thestyle = 'stroke: %s; ' % hex2rgbstr(self.linkColor(i))
             thestyle += 'stroke-width: 2; '
-            thestyle += 'opacity: 0.6; '
             thestyle += 'fill: none;'
             attrib['style'] = thestyle
             attrib['d'] = self.renderer.generatePath(node)
             ElementTree.SubElement(layer, 'path', attrib=attrib)
-
-    def nodePos(self, d, nodeHeight):
-        if self.direction == 'right':
-            return 'translate(%i, %i)' % (d.x, d.y - d.dy/2)
-        elif self.direction == 'left':
-            return 'translate(%i, %i)' % (d.x + nodeHeight - d.w, d.y - 
-                    d.dy/2)
-        elif self.direction == 'up':
-            return 'translate(%i, %i)' % (d.x - d.dx/2, d.y)
-        elif self.direction == 'down':
-            return 'translate(%i, %i)' % (d.x - d.dx/2, d.y)
-
-    def labelBgColor(self, idx):
-        if isinstance(self.options['labelBgColor'], str):
-            return self.options['labelBgColor']
-        return self.options['labelBgColor'](idx)
-
-    def labelTextColor(self, idx):
-        if isinstance(self.options['labelTextColor'], str):
-            return self.options['labelTextColor']
-        return self.options['labelTextColor'](idx)
-
-    def textFn(self, item):
-        if self.options['textFn'] is None:
-            return item.name if item.name else ''
-        return self.options['textFn'](item)
 
     def add_labels(self, trans):
         layer = ElementTree.SubElement(trans, 'g', attrib={'class': 
@@ -328,9 +331,10 @@ class TimelineSVG(Timeline):
             thetext = ElementTree.SubElement(theg, 'text', attrib={
                 'class': 'label-text',
                 'dy': self.options['textYOffset'],
+                'dx': self.options['textXOffset'],
                 'x': str(self.options['labelPadding']['left']),
                 'y': str(self.options['labelPadding']['top']),
                 'style': 'fill: %s;' % hex2rgbstr(self.labelTextColor(i))
                 })
-            thetext.text = self.textFn(node.data)
+            thetext.text = node.data.text
 

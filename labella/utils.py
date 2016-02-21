@@ -35,6 +35,14 @@ CATEGORY_20 = [
         '#9edae5',
         ]
 
+def color_10(i):
+    colorscale = CATEGORY_10
+    return colorscale[i%len(colorscale)]
+
+def color_20(i):
+    colorscale = CATEGORY_20
+    return colorscale[i%len(colorscale)]
+
 def color_code(i, colorscale=CATEGORY_10):
     return colorscale[i%len(colorscale)]
 
@@ -44,11 +52,14 @@ def hex2dec(s):
 def hex2rgb(code):
     if code[0:1] == '#':
         code = code[1:]
-    rgb = (hex2dec(code[:2]), hex2dec(code[2:4]), hex2dec(code[4:6]))
+    if len(code) == 3:
+        rgb = (hex2dec(code[0]+code[0]), hex2dec(code[1]+code[1]), 
+                hex2dec(code[2]+code[2]))
+    else:
+        rgb = (hex2dec(code[:2]), hex2dec(code[2:4]), hex2dec(code[4:6]))
     return rgb
 
 def hex2rgbstr(code):
     rgb = hex2rgb(code)
     rgbstr = ', '.join([str(x) for x in rgb])
     return 'rgb(%s)' % rgbstr
-

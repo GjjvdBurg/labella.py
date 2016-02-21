@@ -52,7 +52,6 @@ class ForceTestCase(unittest.TestCase):
         force = Force()
         force.nodes(nodes)
         force.compute()
-        print(force.options)
 
         current_pos = [n.currentPos for n in nodes]
         expected_pos = [25, 78, 131, 184, 237, 304, 401, 454, 507, 673, 736,
