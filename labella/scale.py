@@ -57,8 +57,12 @@ def d3_scale_nice(domain, nice):
         dx = x0
         x0 = x1
         x1 = dx
-    domain[i0] = nice['floor'](x0)
-    domain[i1] = nice['ceil'](x1)
+    if isinstance(nice, dict):
+        domain[i0] = nice['floor'](x0)
+        domain[i1] = nice['ceil'](x1)
+    else:
+        domain[i0] = nice.floor(x0)
+        domain[i1] = nice.ceil(x1)
     return domain
 
 def d3_scale_niceIdentity():
@@ -149,38 +153,33 @@ def d3_time_scaleDate(t):
     return arrow.get(t / 1000.0)
 
 def time_nice_floor(date, skipped, interval):
-    if isinstance(interval, dict):
-        newdate = interval['floor'](date)
-    else:
-        newdate = interval.floor(date)
+    newdate = interval.floor(date)
     while skipped(newdate):
         newdate = d3_time_scaleDate(arrow2milli(newdate) - 1)
-        if isinstance(interval, dict):
-            newdate = interval['floor'](newdate)
-        else:
-            newdate = interval.floor(newdate)
+        newdate = interval.floor(newdate)
     return newdate
 
 def time_nice_ceil(date, skipped, interval):
-    if isinstance(interval, dict):
-        newdate = interval['ceil'](date)
-    else:
-        newdate = interval.ceil(date)
+    newdate = interval.ceil(date)
     while skipped(newdate):
         newdate = d3_time_scaleDate(arrow2milli(newdate) + 1)
-        if isinstance(interval, dict):
-            newdate = interval['ceil'](date)
-        else:
-            newdate = interval.ceil(date)
+        newdate = interval.ceil(newdate)
     return newdate
 
-d3_time_scaleMilliseconds = {
-        'range': lambda start, stop, step : list(map(d3_time_scaleDate, 
-            range(math.ceil(int(start.float_timestamp * 1000) / step) * step, 
-                int(stop.float_timestamp * 1000), step))),
-        'floor': d3_identity,
-        'ceil': d3_identity
-        }
+class d3TimeScaleMilliseconds(object):
+    def __init__(self):
+        pass
+
+    def range(self, start, stop, step):
+        return list(map(d3_time_scaleDate, 
+            range(math.ceil(int(start.float_timestamp * 1000) / step) * step,
+                int(stop.float_timestamp * 1000), step)))
+    def floor(self, x):
+        return x
+    def ceil(self, x):
+        return x
+
+d3_time_scaleMilliseconds = d3TimeScaleMilliseconds()
 
 d3_time_scaleSteps = [
   1e3,    # 1-second
@@ -346,7 +345,7 @@ class TimeScale(object):
     def domain(self, x=None):
         if x is None:
             return list(map(d3_time_scaleDate, self._linear.domain()))
-        num_domain = list(map(lambda a : a.float_timestamp * 1000, x))
+        num_domain = list(map(arrow2milli, x))
         self._linear.domain(num_domain)
         return self
 
@@ -359,17 +358,17 @@ class TimeScale(object):
                     d3_scale_linearTickRange(list(map(lambda d : d / 31536e6, 
                         extent)), count)[2]]
         if not i:
-            return [d3_time_scaleMilliseconds, 
+            return [d3_time_scaleMilliseconds,
                     d3_scale_linearTickRange(extent, count)[2]]
         if (target / d3_time_scaleSteps[i - 1] < d3_time_scaleSteps[i] / 
                 target):
             return self._methods[i - 1]
         return self._methods[i]
 
-    def nice(self, interval=None, skip=None):
+    def nice(self, interval=None, skip=0):
         domain = self.domain()
         extent = d3_scaleExtent(domain)
-        extent = list(map(lambda x : x.float_timestamp * 1000, extent))
+        extent = list(map(arrow2milli, extent))
         if interval is None:
             method = self.tickMethod(extent, 10)
         elif str(interval).isnumeric():
@@ -381,12 +380,8 @@ class TimeScale(object):
             skip = method[1]
 
         def skipped(date):
-            if isinstance(interval, dict):
-                return (not date is None) and (not len(interval['range'](date, 
-                    d3_time_scaleDate(arrow2milli(date)+1), skip)))
-            else:
-                return (not date is None) and (not len(interval.range(date, 
-                    d3_time_scaleDate(arrow2milli(date)+1), skip)))
+            return (not date is None) and (not len(interval.range(date, 
+                d3_time_scaleDate(arrow2milli(date)+1), skip)))
 
         if skip > 1:
             return self.domain(d3_scale_nice(domain,
@@ -407,19 +402,11 @@ class TimeScale(object):
             skip = method[1]
 
         if skip < 1:
-            if isinstance(interval, dict):
-                return interval['range'](d3_time_scaleDate(extent[0]), 
-                        d3_time_scaleDate(extent[1] + 1), 1)
-            else:
-                return interval.range(d3_time_scaleDate(extent[0]), 
-                        d3_time_scaleDate(extent[1] + 1), 1)
+            return interval.range(d3_time_scaleDate(extent[0]), 
+                    d3_time_scaleDate(extent[1] + 1), 1)
         else:
-            if isinstance(interval, dict):
-                return interval['range'](d3_time_scaleDate(extent[0]), 
-                        d3_time_scaleDate(extent[1] + 1), skip)
-            else:
-                return interval.range(d3_time_scaleDate(extent[0]), 
-                        d3_time_scaleDate(extent[1] + 1), skip)
+            return interval.range(d3_time_scaleDate(extent[0]), 
+                    d3_time_scaleDate(extent[1] + 1), skip)
 
     def tickFormat(self):
         return self._format

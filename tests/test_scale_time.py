@@ -10,6 +10,7 @@ import arrow
 import unittest
 
 from labella.scale import TimeScale
+from labella.d3_time import d3_time
 
 def local(year, month, day, hours=0, minutes=0, seconds=0, milliseconds=0):
     # helper function copied from d3/test/time/time.js
@@ -19,47 +20,62 @@ def local(year, month, day, hours=0, minutes=0, seconds=0, milliseconds=0):
 
 class TimeScaleTestCase(unittest.TestCase):
 
-#    def test_nice_1a(self):
-#        # rounds using the specified time interval
-#        x = TimeScale().domain([local(2009, 0, 1, 0, 12), local(2009, 0, 1,
-#            23, 48)])
-#        self.assertEqual(x.nice('day').domain(), [local(2009, 0, 1),
-#            local(2009, 0, 2)])
-#
-#    def test_nice_1b(self):
-#        # rounds using the specified time interval
-#        x = TimeScale().domain([local(2009, 0, 1, 0, 12), local(2009, 0, 1,
-#            23, 48)])
-#        self.assertEqual(x.nice('week').domain(), [local(2008, 11, 28),
-#            local(2009, 0, 4)])
-#
-#    def test_nice_1c(self):
-#        # rounds using the specified time interval
-#        x = TimeScale().domain([local(2009, 0, 1, 0, 12), local(2009, 0, 1,
-#            23, 48)])
-#        self.assertEqual(x.nice('month').domain(), [local(2008, 11, 1),
-#            local(2009, 1, 1)])
-#
-#    def test_nice_1d(self):
-#        # rounds using the specified time interval
-#        x = TimeScale().domain([local(2009, 0, 1, 0, 12), local(2009, 0, 1,
-#            23, 48)])
-#        self.assertEqual(x.nice('year').domain(), [local(2008, 0, 1),
-#            local(2010, 0, 1)])
-#
-#    def test_nice_2(self):
-#        # rounds using the specified time interval and skip
-#        x = TimeScale().domain([local(2009, 0, 1, 0, 12), local(2009, 0, 1,
-#            23, 48)])
-#        self.assertEqual(x.nice('day', 3).domain(), [local(2009, 0, 1),
-#            local(2009, 0, 4)])
-#        self.assertEqual(x.nice('week', 2).domain(), [local(2008, 11, 21),
-#            local(2008, 0, 4)])
-#        self.assertEqual(x.nice('month', 3).domain(), [local(2008, 9, 1),
-#            local(2009, 3, 1)])
-#        self.assertEqual(x.nice('year', 10).domain(), [local(2000, 0, 1),
-#            local(2010, 0, 1)])
-#
+    def test_nice_1a(self):
+        # rounds using the specified time interval
+        x = TimeScale().domain([local(2009, 0, 1, 0, 12), local(2009, 0, 1,
+            23, 48)])
+        self.assertEqual(x.nice(d3_time['day']).domain(), [local(2009, 0, 1),
+            local(2009, 0, 2)])
+
+    def test_nice_1b(self):
+        # rounds using the specified time interval
+        x = TimeScale().domain([local(2009, 0, 1, 0, 12), local(2009, 0, 1,
+            23, 48)])
+        self.assertEqual(x.nice(d3_time['week']).domain(), [local(2008, 11, 
+            28), local(2009, 0, 4)])
+
+    def test_nice_1c(self):
+        # rounds using the specified time interval
+        x = TimeScale().domain([local(2009, 0, 1, 0, 12), local(2009, 0, 1,
+            23, 48)])
+        self.assertEqual(x.nice(d3_time['month']).domain(), [local(2008, 11, 
+            1), local(2009, 1, 1)])
+
+    def test_nice_1d(self):
+        # rounds using the specified time interval
+        x = TimeScale().domain([local(2009, 0, 1, 0, 12), local(2009, 0, 1,
+            23, 48)])
+        self.assertEqual(x.nice(d3_time['year']).domain(), [local(2008, 0, 1),
+            local(2010, 0, 1)])
+
+    def test_nice_2a(self):
+        # rounds using the specified time interval and skip
+        x = TimeScale().domain([local(2009, 0, 1, 0, 12), local(2009, 0, 1,
+            23, 48)])
+        self.assertEqual(x.nice(d3_time['day'], 3).domain(), [local(2009, 0, 
+            1), local(2009, 0, 4)])
+
+    def test_nice_2b(self):
+        # rounds using the specified time interval and skip
+        x = TimeScale().domain([local(2009, 0, 1, 0, 12), local(2009, 0, 1,
+            23, 48)])
+        self.assertEqual(x.nice(d3_time['week'], 2).domain(), [local(2008, 11, 
+            21), local(2008, 0, 4)])
+
+    def test_nice_2c(self):
+        # rounds using the specified time interval and skip
+        x = TimeScale().domain([local(2009, 0, 1, 0, 12), local(2009, 0, 1,
+            23, 48)])
+        self.assertEqual(x.nice(d3_time['month'], 3).domain(), [local(2008, 9, 
+            1), local(2009, 3, 1)])
+
+    def test_nice_2d(self):
+        # rounds using the specified time interval and skip
+        x = TimeScale().domain([local(2009, 0, 1, 0, 12), local(2009, 0, 1,
+            23, 48)])
+        self.assertEqual(x.nice(d3_time['year'], 10).domain(), [local(2000, 0, 
+            1), local(2010, 0, 1)])
+
     def test_nice_3(self):
         # rounds using the specified count
         x = TimeScale().domain([local(2009, 0, 1, 0, 17), local(2009, 0, 1,
@@ -76,12 +92,12 @@ class TimeScaleTestCase(unittest.TestCase):
         self.assertEqual(x.nice().domain(), [local(2009, 0, 1), local(2009, 0,
             2)])
 
-#    def test_nice_5(self):
-#        # works on degenerate domains
-#        x = TimeScale().domain([local(2009, 0, 1, 0, 12), local(2009, 0, 1, 0,
-#            12)])
-#        self.assertEqual(x.nice('day').domain(), [local(2009, 0, 1),
-#            local(2009, 0, 2)])
+    def test_nice_5(self):
+        # works on degenerate domains
+        x = TimeScale().domain([local(2009, 0, 1, 0, 12), local(2009, 0, 1, 0,
+            12)])
+        self.assertEqual(x.nice(d3_time['day']).domain(), [local(2009, 0, 1),
+            local(2009, 0, 2)])
 
     def test_nice_6(self):
         # nice succeeds on sub-second intervals

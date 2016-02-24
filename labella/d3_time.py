@@ -1,5 +1,6 @@
 
 import arrow
+import datetime
 import math
 
 d3_date = arrow.Arrow
@@ -9,6 +10,8 @@ milli2arrow = lambda x : arrow.get(x / 1000.0)
 arrow2milli = lambda x : x.float_timestamp * 1000.0
 
 getTimezoneOffset = lambda x : x.utcoffset().total_seconds() / 60.0
+daysThisMonth = lambda x : (x.replace(month=x.month%12+1, day=1) - 
+        datetime.timedelta(days=1)).day
 
 class d3_time_interval():
 
@@ -29,7 +32,7 @@ class d3_time_interval():
         return self._local(date)
 
     def ceil(self, date):
-        ndate = self._local(milli2arrow(arrow2milli(date) - 1000))
+        ndate = self._local(milli2arrow(arrow2milli(date) - 1))
         ndate = self._step(ndate, 1)
         return ndate
 
@@ -39,8 +42,6 @@ class d3_time_interval():
         return ndate
 
     def range(self, t0, t1, dt):
-#        import code
-#        code.interact(local=dict(globals(), **locals()))
         time = self.ceil(t0)
         times = []
         if dt > 1:
@@ -66,64 +67,6 @@ class d3_time_interval():
     def __call__(self, date):
         return self._local(date)
 
-#def d3_time_interval(local, step, number):
-#
-#    def theround(date):
-#        d0 = local(date)
-#        d1 = offset(d0, 1)
-#        if date - d0 < d1 - date:
-#            return d0
-#        return d1
-#
-#    def ceil(date):
-#        ndate = local(arrow.Arrow(date - 1))
-#        step(ndate, 1)
-#        return ndate
-#
-#    def offset(date, k):
-#        ndate = arrow.Arrow(date)
-#        step(ndate, k)
-#        return ndate
-#
-#    def therange(t0, t1, dt):
-#        time = ceil(t0)
-#        times = []
-#        if dt > 1:
-#            while time < t1:
-#                if not (number(time) % dt):
-#                    times.append(arrow.Arrow(time))
-#                step(time, 1)
-#        else:
-#            while time < t1:
-#                times.append(arrow.Arrow(time))
-#                step(time, 1)
-#        return times
-#
-#    def range_utc(t0, t1, dt):
-#        try:
-#            d3_date = d3_date_utc
-#            utc = d3_date_utc()
-#            utc._ = t0
-#            return therange(utc, t1, dt)
-#        finally:
-#            d3_date = arrow.Arrow
-#
-#    local.floor = local
-#    local.round = theround
-#    local.ceil = ceil
-#    local.offset = offset
-#    local.range = therange
-#
-#    utc = d3_time_interval_utc(local)
-#    local.utc = d3_time_interval_utc(local)
-#    utc.floor = utc
-#    utc.round = d3_time_interval_utc(theround)
-#    utc.ceil = d3_time_interval_utc(ceil)
-#    utc.offset = d3_time_interval_utc(offset)
-#    utc.range = range_utc
-#
-#    return local
-
 def d3_time_interval_utc(method):
     def func(date, k):
         try:
@@ -139,8 +82,8 @@ def d3_time_interval_utc(method):
 
 d3_time['second'] = d3_time_interval(
         lambda date : milli2arrow(math.floor(arrow2milli(date) / 1e3) * 1e3),
-        lambda date, offset : date.fromtimestamp((date.float_timestamp * 
-            1000.0 + math.floor(offset) * 1e3)/1000.0),
+        lambda date, offset : milli2arrow((arrow2milli(date) + 
+            math.floor(offset) * 1e3)),
         lambda date : date.second
         )
 
@@ -153,8 +96,8 @@ d3_time['seconds_utc'] = d3_time['second'].range_utc
 
 d3_time['minute'] = d3_time_interval(
         lambda date : milli2arrow(math.floor(arrow2milli(date) / 6e4) * 6e4),
-        lambda date, offset : date.fromtimestamp((date.float_timestamp * 
-            1000.0  + math.floor(offset) * 6e4) / 1000.0),
+        lambda date, offset : milli2arrow(arrow2milli(date) + 
+            math.floor(offset) * 6e4),
         lambda date : date.minute
         )
 
@@ -184,18 +127,34 @@ d3_time['hours_utc'] = d3_time['hour'].range_utc
 
 ############# day ##################################
 
+def d3_time_day_offset(date, offset):
+    nday = date.day + offset
+    ndaysthismonth = daysThisMonth(date)
+    ndate = date.clone()
+    while nday > ndaysthismonth:
+        ndate = d3_time_month_offset(date, 1)
+        nday -= ndaysthismonth
+        ndaysthismonth = daysThisMonth(ndate)
+    ndate = ndate.replace(day=nday)
+    return ndate
+
+def day_of_year(date):
+    year = d3_time['year'](date)
+    tzoff = getTimezoneOffset(date) - getTimezoneOffset(year)
+    diff = arrow2milli(date) - arrow2milli(year) - tzoff * 6e4
+    return math.floor(diff / 864e5)
+
 d3_time['day'] = d3_time_interval(
         lambda date : arrow.Arrow(date.year, date.month, date.day),
-        lambda date, offset : date.replace(day=(date.day + offset)),
+        #lambda date, offset : date.replace(day=(date.day + offset)),
+        lambda date, offset : d3_time_day_offset(date, offset),
         lambda date : date.day - 1
         )
 
 d3_time['days'] = d3_time['day'].range
 d3_time['days_utc'] = d3_time['day'].range_utc
 
-d3_time['dayOfYear'] = (lambda date : math.floor((date - d3_time['year'](date) 
-    - (getTimezoneOffset(date) - getTimezoneOffset(d3_time['year'])) * 6e4) / 
-    864e5))
+d3_time['dayOfYear'] = lambda date : day_of_year(date)
 
 ####################################################
 
