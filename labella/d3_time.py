@@ -1,16 +1,18 @@
 
-import arrow
-import datetime
 import math
+
+from copy import deepcopy
+from datetime import datetime, timedelta
 
 d3_time = {}
 
-milli2arrow = lambda x : arrow.get(x / 1000.0)
-arrow2milli = lambda x : x.float_timestamp * 1000.0
+milli2dt = lambda x : datetime.fromtimestamp(x / 1000.0)
+dt2milli = lambda x : x.timestamp() * 1000.0
 
-getTimezoneOffset = lambda x : x.utcoffset().total_seconds() / 60.0
+# Timezones are ignored
+getTimezoneOffset = lambda x : 0
 daysThisMonth = lambda x : (x.replace(month=x.month%12+1, day=1) - 
-        datetime.timedelta(days=1)).day
+        timedelta(days=1)).day
 
 class d3_time_interval():
 
@@ -30,13 +32,12 @@ class d3_time_interval():
         return self._local(date)
 
     def ceil(self, date):
-        ndate = self._local(milli2arrow(arrow2milli(date) - 1))
+        ndate = self._local(milli2dt(dt2milli(date) - 1))
         ndate = self._step(ndate, 1)
         return ndate
 
     def offset(self, date, k):
-        ndate = arrow.Arrow(date)
-        ndate = self._step(ndate, k)
+        ndate = self._step(date, k)
         return ndate
 
     def range(self, t0, t1, dt):
@@ -45,11 +46,11 @@ class d3_time_interval():
         if dt > 1:
             while time < t1:
                 if not (self._number(time) % dt):
-                    times.append(time.clone())
+                    times.append(deepcopy(time))
                 time = self._step(time, 1)
         else:
             while time < t1:
-                times.append(time.clone())
+                times.append(deepcopy(time))
                 time = self._step(time, 1)
         return times
 
@@ -59,8 +60,8 @@ class d3_time_interval():
 ############ second ################################
 
 d3_time['second'] = d3_time_interval(
-        lambda date : milli2arrow(math.floor(arrow2milli(date) / 1e3) * 1e3),
-        lambda date, offset : milli2arrow((arrow2milli(date) + 
+        lambda date : milli2dt(math.floor(dt2milli(date) / 1e3) * 1e3),
+        lambda date, offset : milli2dt((dt2milli(date) + 
             math.floor(offset) * 1e3)),
         lambda date : date.second
         )
@@ -72,8 +73,8 @@ d3_time['seconds'] = d3_time['second'].range
 ############ minute ################################
 
 d3_time['minute'] = d3_time_interval(
-        lambda date : milli2arrow(math.floor(arrow2milli(date) / 6e4) * 6e4),
-        lambda date, offset : milli2arrow(arrow2milli(date) + 
+        lambda date : milli2dt(math.floor(dt2milli(date) / 6e4) * 6e4),
+        lambda date, offset : milli2dt(dt2milli(date) + 
             math.floor(offset) * 6e4),
         lambda date : date.minute
         )
@@ -86,13 +87,13 @@ d3_time['minutes'] = d3_time['minute'].range
 
 def d3_time_hour_local(date):
     timezone = getTimezoneOffset(date) / 60
-    ndate = milli2arrow((math.floor(arrow2milli(date) / 36e5 - timezone) + 
+    ndate = milli2dt((math.floor(dt2milli(date) / 36e5 - timezone) + 
         timezone) * 36e5)
     return ndate
 
 d3_time['hour'] = d3_time_interval(
         lambda date : d3_time_hour_local(date),
-        lambda date, offset : milli2arrow(arrow2milli(date) + 
+        lambda date, offset : milli2dt(dt2milli(date) + 
             math.floor(offset) * 36e5),
         lambda date : date.hour)
 
@@ -105,7 +106,7 @@ d3_time['hours'] = d3_time['hour'].range
 def d3_time_day_offset(date, offset):
     nday = date.day + offset
     ndaysthismonth = daysThisMonth(date)
-    ndate = date.clone()
+    ndate = deepcopy(date)
     while nday > ndaysthismonth:
         ndate = d3_time_month_offset(date, 1)
         nday -= ndaysthismonth
@@ -116,11 +117,11 @@ def d3_time_day_offset(date, offset):
 def day_of_year(date):
     year = d3_time['year'](date)
     tzoff = getTimezoneOffset(date) - getTimezoneOffset(year)
-    diff = arrow2milli(date) - arrow2milli(year) - tzoff * 6e4
+    diff = dt2milli(date) - dt2milli(year) - tzoff * 6e4
     return math.floor(diff / 864e5)
 
 d3_time['day'] = d3_time_interval(
-        lambda date : arrow.Arrow(date.year, date.month, date.day),
+        lambda date : datetime(date.year, date.month, date.day),
         #lambda date, offset : date.replace(day=(date.day + offset)),
         lambda date, offset : d3_time_day_offset(date, offset),
         lambda date : date.day - 1
@@ -139,7 +140,7 @@ def d3_time_week_local(date):
     i = 7
     ndate = d3_time['day'](date)
     diff = ((date.isoweekday() % 7) + i) % 7
-    ndate = arrow.get(ndate.float_timestamp - diff * 24 * 3600)
+    ndate = datetime.fromtimestamp(ndate.timestamp() - diff * 24 * 3600)
     return ndate
 
 def d3_time_week_number(date):
@@ -151,7 +152,7 @@ def d3_time_week_number(date):
 
 d3_time['week'] = d3_time_interval(
         lambda date : d3_time_week_local(date),
-        lambda date, offset : arrow.get(date.float_timestamp + 
+        lambda date, offset : datetime.fromtimestamp(date.timestamp() + 
             math.floor(offset) * 7 * 24 * 3600),
         lambda date : d3_time_week_number(date)
         )
@@ -168,7 +169,7 @@ def d3_time_month_local(date):
 
 def d3_time_month_offset(date, offset):
     nmonth = date.month + offset
-    ndate = date.clone()
+    ndate = deepcopy(date)
     while nmonth > 12:
         ndate = ndate.replace(year=ndate.year + 1)
         nmonth -= 12

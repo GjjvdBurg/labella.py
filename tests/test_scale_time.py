@@ -6,15 +6,16 @@ indexing to Python's 1 based indexing.
 
 """
 
-import arrow
 import unittest
+
+from datetime import datetime
 
 from labella.scale import TimeScale
 from labella.d3_time import d3_time
 
 def local(year, month, day, hours=0, minutes=0, seconds=0, milliseconds=0):
     # helper function copied from d3/test/time/time.js
-    date = arrow.get(year, month+1, day, hours, minutes, seconds, milliseconds
+    date = datetime(year, month+1, day, hours, minutes, seconds, milliseconds
             * 1000)
     return date
 

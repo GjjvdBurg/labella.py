@@ -1,14 +1,15 @@
 """
 """
 
-import arrow
 import math
+
+from datetime import datetime
 
 from labella.d3_time import d3_time
 
 d3_identity = lambda x : x
-arrow2milli = lambda x : x.float_timestamp * 1000.0
-milli2arrow = lambda x : arrow.get(x / 1000.0)
+dt2milli = lambda x : x.timestamp() * 1000.0
+milli2dt = lambda x : datetime.fromtimestamp(x / 1000.0)
 
 def drange(start, stop, step=1):
     r = start
@@ -150,14 +151,14 @@ def d3_bisect(a, x, lo=0, hi=None):
 def time_nice_floor(date, skipped, interval):
     newdate = interval.floor(date)
     while skipped(newdate):
-        newdate = milli2arrow(arrow2milli(newdate) - 1)
+        newdate = milli2dt(dt2milli(newdate) - 1)
         newdate = interval.floor(newdate)
     return newdate
 
 def time_nice_ceil(date, skipped, interval):
     newdate = interval.ceil(date)
     while skipped(newdate):
-        newdate = milli2arrow(arrow2milli(newdate) + 1)
+        newdate = milli2dt(dt2milli(newdate) + 1)
         newdate = interval.ceil(newdate)
     return newdate
 
@@ -166,9 +167,8 @@ class d3TimeScaleMilliseconds(object):
         pass
 
     def range(self, start, stop, step):
-        return list(map(milli2arrow, 
-            range(math.ceil(int(start.float_timestamp * 1000) / step) * step,
-                int(stop.float_timestamp * 1000), step)))
+        return list(map(milli2dt, range(math.ceil(int(start.timestamp() * 
+            1000) / step) * step, int(stop.timestamp() * 1000), step)))
     def floor(self, x):
         return x
     def ceil(self, x):
@@ -333,12 +333,12 @@ class TimeScale(object):
         self._format = mytimeformat if fmt is None else fmt
 
     def invert(self, x):
-        return milli2arrow(self._linear.invert(x))
+        return milli2dt(self._linear.invert(x))
 
     def domain(self, x=None):
         if x is None:
-            return list(map(milli2arrow, self._linear.domain()))
-        num_domain = list(map(arrow2milli, x))
+            return list(map(milli2dt, self._linear.domain()))
+        num_domain = list(map(dt2milli, x))
         self._linear.domain(num_domain)
         return self
 
@@ -361,7 +361,7 @@ class TimeScale(object):
     def nice(self, interval=None, skip=0):
         domain = self.domain()
         extent = d3_scaleExtent(domain)
-        extent = list(map(arrow2milli, extent))
+        extent = list(map(dt2milli, extent))
         if interval is None:
             method = self.tickMethod(extent, 10)
         elif str(interval).isnumeric():
@@ -374,7 +374,7 @@ class TimeScale(object):
 
         def skipped(date):
             return (not date is None) and (not len(interval.range(date, 
-                milli2arrow(arrow2milli(date)+1), skip)))
+                milli2dt(dt2milli(date)+1), skip)))
 
         if skip > 1:
             return self.domain(d3_scale_nice(domain,
@@ -387,7 +387,7 @@ class TimeScale(object):
 
     def ticks(self, interval=None, skip=None):
         extent = d3_scaleExtent(self.domain())
-        extent = list(map(lambda x : x.float_timestamp * 1000, extent))
+        extent = list(map(lambda x : x.timestamp() * 1000, extent))
         method = (self.tickMethod(extent, 10) if interval is None else 
                 self.tickMethod(extent, interval))
         if method:
@@ -395,11 +395,11 @@ class TimeScale(object):
             skip = method[1]
 
         if skip < 1:
-            return interval.range(milli2arrow(extent[0]), 
-                    milli2arrow(extent[1] + 1), 1)
+            return interval.range(milli2dt(extent[0]), 
+                    milli2dt(extent[1] + 1), 1)
         else:
-            return interval.range(milli2arrow(extent[0]), 
-                    milli2arrow(extent[1] + 1), skip)
+            return interval.range(milli2dt(extent[0]), 
+                    milli2dt(extent[1] + 1), skip)
 
     def tickFormat(self):
         return self._format
@@ -429,4 +429,4 @@ class TimeScale(object):
         return TimeScale(self._linear.copy(), self._methods, self._format)
 
     def __call__(self, x):
-        return self._linear(arrow2milli(x))
+        return self._linear(dt2milli(x))
