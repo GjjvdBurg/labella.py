@@ -8,6 +8,7 @@ from labella.d3_time import d3_time
 
 d3_identity = lambda x : x
 arrow2milli = lambda x : x.float_timestamp * 1000.0
+milli2arrow = lambda x : arrow.get(x / 1000.0)
 
 def drange(start, stop, step=1):
     r = start
@@ -65,16 +66,13 @@ def d3_scale_nice(domain, nice):
         domain[i1] = nice.ceil(x1)
     return domain
 
-def d3_scale_niceIdentity():
-    return {'floor': lambda x: x,
-            'ceil': lambda x: x}
-
 def d3_scale_niceStep(step):
     if step:
         return {'floor': lambda x: math.floor(x / step) * step,
                 'ceil': lambda x: math.ceil(x / step) * step}
     else:
-        return d3_scale_niceIdentity()
+        return {'floor': lambda x : x,
+                'ceil': lambda x : x}
 
 def d3_scale_linearTickRange(domain, m=None):
     if m is None:
@@ -149,20 +147,17 @@ def d3_bisect(a, x, lo=0, hi=None):
             lo = mid + 1
     return lo
 
-def d3_time_scaleDate(t):
-    return arrow.get(t / 1000.0)
-
 def time_nice_floor(date, skipped, interval):
     newdate = interval.floor(date)
     while skipped(newdate):
-        newdate = d3_time_scaleDate(arrow2milli(newdate) - 1)
+        newdate = milli2arrow(arrow2milli(newdate) - 1)
         newdate = interval.floor(newdate)
     return newdate
 
 def time_nice_ceil(date, skipped, interval):
     newdate = interval.ceil(date)
     while skipped(newdate):
-        newdate = d3_time_scaleDate(arrow2milli(newdate) + 1)
+        newdate = milli2arrow(arrow2milli(newdate) + 1)
         newdate = interval.ceil(newdate)
     return newdate
 
@@ -171,7 +166,7 @@ class d3TimeScaleMilliseconds(object):
         pass
 
     def range(self, start, stop, step):
-        return list(map(d3_time_scaleDate, 
+        return list(map(milli2arrow, 
             range(math.ceil(int(start.float_timestamp * 1000) / step) * step,
                 int(stop.float_timestamp * 1000), step)))
     def floor(self, x):
@@ -182,28 +177,25 @@ class d3TimeScaleMilliseconds(object):
 d3_time_scaleMilliseconds = d3TimeScaleMilliseconds()
 
 d3_time_scaleSteps = [
-  1e3,    # 1-second
-  5e3,    # 5-second
-  15e3,   # 15-second
-  3e4,    # 30-second
-  6e4,    # 1-minute
-  3e5,    # 5-minute
-  9e5,    # 15-minute
-  18e5,   # 30-minute
-  36e5,   # 1-hour
-  108e5,  # 3-hour
-  216e5,  # 6-hour
-  432e5,  # 12-hour
-  864e5,  # 1-day
-  1728e5, # 2-day
-  6048e5, # 1-week
-  2592e6, # 1-month
-  7776e6, # 3-month
-  31536e6 # 1-year
-  ]
-
-# TODO: figure out how these are used and possible replace them with datetime 
-# functions or other python library.
+        1e3,    # 1-second
+        5e3,    # 5-second
+        15e3,   # 15-second
+        3e4,    # 30-second
+        6e4,    # 1-minute
+        3e5,    # 5-minute
+        9e5,    # 15-minute
+        18e5,   # 30-minute
+        36e5,   # 1-hour
+        108e5,  # 3-hour
+        216e5,  # 6-hour
+        432e5,  # 12-hour
+        864e5,  # 1-day
+        1728e5, # 2-day
+        6048e5, # 1-week
+        2592e6, # 1-month
+        7776e6, # 3-month
+        31536e6 # 1-year
+        ]
 
 d3_time_scaleLocalMethods = [
         [d3_time['second'], 1],
@@ -226,34 +218,34 @@ d3_time_scaleLocalMethods = [
         [d3_time['year'], 1]
         ]
 
-def d3_time_scaleLocalFormat():
-    pass
+def d3_time_formatMulti(formats):
+    def local_func(date):
+        i = 0
+        f = formats[i]
+        while (not f[1](date)):
+            i += 1
+            f = formats[i]
+        return f[0](date)
+    return local_func
+
+def mytimeformat(date):
+    if date.day == 1 and date.month == 1:
+        return date.strftime("%Y")
+    elif date.day == 1:
+        return date.strftime("%B")
+    elif (date.isoweekday() == 7 and date.hour == 0 and date.minute == 0 and 
+            date.second == 0):
+        return date.strftime("%b %d")
+    elif (date.hour == 0 and date.minute == 0 and date.second == 0):
+        return date.strftime("%a %d")
+    elif (date.minute == 0 and date.second == 0):
+        return date.strftime("%I %p")
+    elif (date.second == 0):
+        return date.strftime("%H:%M")
+    else:
+        return date.strftime(":%S")
 
 ######################################################################
-
-"""
-
-Let's rethink. We need:
-
-    - Linear scale
-    - Datetime scale
-
-Both should be able to give:
-
-    - domain
-    - ticks
-    - nice rounding of min/max
-
-Scales map from the input _domain_ to the output _range_.
-
-Restrictions:
-
-    - Only bilinear scales are supported
-    - only numbers and datetime objects are supported. Not colors, strings, or 
-      objects.
-
-"""
-
 
 class LinearScale(object):
 
@@ -337,14 +329,15 @@ class TimeScale(object):
         self._linear = LinearScale() if linear is None else linear
         self._methods = (d3_time_scaleLocalMethods if methods is None else 
                 methods)
-        self._format = d3_time_scaleLocalFormat if fmt is None else fmt
+        #self._format = d3_time_scaleLocalFormat if fmt is None else fmt
+        self._format = mytimeformat if fmt is None else fmt
 
     def invert(self, x):
-        return d3_time_scaleDate(self._linear.invert(x))
+        return milli2arrow(self._linear.invert(x))
 
     def domain(self, x=None):
         if x is None:
-            return list(map(d3_time_scaleDate, self._linear.domain()))
+            return list(map(milli2arrow, self._linear.domain()))
         num_domain = list(map(arrow2milli, x))
         self._linear.domain(num_domain)
         return self
@@ -381,7 +374,7 @@ class TimeScale(object):
 
         def skipped(date):
             return (not date is None) and (not len(interval.range(date, 
-                d3_time_scaleDate(arrow2milli(date)+1), skip)))
+                milli2arrow(arrow2milli(date)+1), skip)))
 
         if skip > 1:
             return self.domain(d3_scale_nice(domain,
@@ -402,11 +395,11 @@ class TimeScale(object):
             skip = method[1]
 
         if skip < 1:
-            return interval.range(d3_time_scaleDate(extent[0]), 
-                    d3_time_scaleDate(extent[1] + 1), 1)
+            return interval.range(milli2arrow(extent[0]), 
+                    milli2arrow(extent[1] + 1), 1)
         else:
-            return interval.range(d3_time_scaleDate(extent[0]), 
-                    d3_time_scaleDate(extent[1] + 1), skip)
+            return interval.range(milli2arrow(extent[0]), 
+                    milli2arrow(extent[1] + 1), skip)
 
     def tickFormat(self):
         return self._format
@@ -436,4 +429,4 @@ class TimeScale(object):
         return TimeScale(self._linear.copy(), self._methods, self._format)
 
     def __call__(self, x):
-        return self._linear(x.float_timestamp)
+        return self._linear(arrow2milli(x))

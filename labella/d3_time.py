@@ -3,7 +3,6 @@ import arrow
 import datetime
 import math
 
-d3_date = arrow.Arrow
 d3_time = {}
 
 milli2arrow = lambda x : arrow.get(x / 1000.0)
@@ -19,7 +18,6 @@ class d3_time_interval():
         self._local = local
         self._step = step
         self._number = number
-        self.utc = d3_time_interval_utc(local)
 
     def round(self, date):
         d0 = self._local(date)
@@ -55,28 +53,8 @@ class d3_time_interval():
                 time = self._step(time, 1)
         return times
 
-    def range_utc(self, t0, t1, dt):
-        try:
-            d3_date = d3_date_utc
-            utc = d3_date_utc()
-            utc._ = t0
-            return self.range(utc, t1, dt)
-        finally:
-            d3_date = arrow.Arrow
-
     def __call__(self, date):
         return self._local(date)
-
-def d3_time_interval_utc(method):
-    def func(date, k):
-        try:
-            d3_date = d3_date_utc
-            utc = d3_date_utc()
-            utc._ = date
-            return method(utc, k)._
-        finally:
-            d3_date = arrow.Arrow
-    return func
 
 ############ second ################################
 
@@ -88,7 +66,6 @@ d3_time['second'] = d3_time_interval(
         )
 
 d3_time['seconds'] = d3_time['second'].range
-d3_time['seconds_utc'] = d3_time['second'].range_utc
 
 ####################################################
 
@@ -102,7 +79,6 @@ d3_time['minute'] = d3_time_interval(
         )
 
 d3_time['minutes'] = d3_time['minute'].range
-d3_time['minutes_utc'] = d3_time['minute'].range_utc
 
 ####################################################
 
@@ -121,7 +97,6 @@ d3_time['hour'] = d3_time_interval(
         lambda date : date.hour)
 
 d3_time['hours'] = d3_time['hour'].range
-d3_time['hours_utc'] = d3_time['hour'].range_utc
 
 ####################################################
 
@@ -152,7 +127,6 @@ d3_time['day'] = d3_time_interval(
         )
 
 d3_time['days'] = d3_time['day'].range
-d3_time['days_utc'] = d3_time['day'].range_utc
 
 d3_time['dayOfYear'] = lambda date : day_of_year(date)
 
@@ -183,7 +157,6 @@ d3_time['week'] = d3_time_interval(
         )
 
 d3_time['weeks'] = d3_time['week'].range
-d3_time['weeks_utc'] = d3_time['week'].range_utc
 
 ####################################################
 
@@ -209,7 +182,6 @@ d3_time['month'] = d3_time_interval(
         )
 
 d3_time['months'] = d3_time['month'].range
-d3_time['months_utc'] = d3_time['month'].range_utc
 
 ####################################################
 
@@ -226,6 +198,5 @@ d3_time['year'] = d3_time_interval(
         )
 
 d3_time['years'] = d3_time['year'].range
-d3_time['years_utc'] = d3_time['year'].range_utc
 
 ####################################################

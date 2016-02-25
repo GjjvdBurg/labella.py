@@ -20,31 +20,16 @@ def local(year, month, day, hours=0, minutes=0, seconds=0, milliseconds=0):
 
 class TimeScaleTestCase(unittest.TestCase):
 
-    def test_nice_1a(self):
+    def test_nice_1c(self):
         # rounds using the specified time interval
         x = TimeScale().domain([local(2009, 0, 1, 0, 12), local(2009, 0, 1,
             23, 48)])
         self.assertEqual(x.nice(d3_time['day']).domain(), [local(2009, 0, 1),
             local(2009, 0, 2)])
-
-    def test_nice_1b(self):
-        # rounds using the specified time interval
-        x = TimeScale().domain([local(2009, 0, 1, 0, 12), local(2009, 0, 1,
-            23, 48)])
-        self.assertEqual(x.nice(d3_time['week']).domain(), [local(2008, 11, 
+        self.assertEqual(x.nice(d3_time['week']).domain(), [local(2008, 11,
             28), local(2009, 0, 4)])
-
-    def test_nice_1c(self):
-        # rounds using the specified time interval
-        x = TimeScale().domain([local(2009, 0, 1, 0, 12), local(2009, 0, 1,
-            23, 48)])
-        self.assertEqual(x.nice(d3_time['month']).domain(), [local(2008, 11, 
+        self.assertEqual(x.nice(d3_time['month']).domain(), [local(2008, 11,
             1), local(2009, 1, 1)])
-
-    def test_nice_1d(self):
-        # rounds using the specified time interval
-        x = TimeScale().domain([local(2009, 0, 1, 0, 12), local(2009, 0, 1,
-            23, 48)])
         self.assertEqual(x.nice(d3_time['year']).domain(), [local(2008, 0, 1),
             local(2010, 0, 1)])
 
@@ -52,28 +37,13 @@ class TimeScaleTestCase(unittest.TestCase):
         # rounds using the specified time interval and skip
         x = TimeScale().domain([local(2009, 0, 1, 0, 12), local(2009, 0, 1,
             23, 48)])
-        self.assertEqual(x.nice(d3_time['day'], 3).domain(), [local(2009, 0, 
+        self.assertEqual(x.nice(d3_time['day'], 3).domain(), [local(2009, 0,
             1), local(2009, 0, 4)])
-
-    def test_nice_2b(self):
-        # rounds using the specified time interval and skip
-        x = TimeScale().domain([local(2009, 0, 1, 0, 12), local(2009, 0, 1,
-            23, 48)])
-        self.assertEqual(x.nice(d3_time['week'], 2).domain(), [local(2008, 11, 
-            21), local(2008, 0, 4)])
-
-    def test_nice_2c(self):
-        # rounds using the specified time interval and skip
-        x = TimeScale().domain([local(2009, 0, 1, 0, 12), local(2009, 0, 1,
-            23, 48)])
-        self.assertEqual(x.nice(d3_time['month'], 3).domain(), [local(2008, 9, 
+        self.assertEqual(x.nice(d3_time['week'], 2).domain(), [local(2008, 11,
+            21), local(2009, 0, 4)])
+        self.assertEqual(x.nice(d3_time['month'], 3).domain(), [local(2008, 9,
             1), local(2009, 3, 1)])
-
-    def test_nice_2d(self):
-        # rounds using the specified time interval and skip
-        x = TimeScale().domain([local(2009, 0, 1, 0, 12), local(2009, 0, 1,
-            23, 48)])
-        self.assertEqual(x.nice(d3_time['year'], 10).domain(), [local(2000, 0, 
+        self.assertEqual(x.nice(d3_time['year'], 10).domain(), [local(2000, 0,
             1), local(2010, 0, 1)])
 
     def test_nice_3(self):
@@ -354,6 +324,54 @@ class TimeScaleTestCase(unittest.TestCase):
         x = TimeScale().domain([local(2014, 2, 2), local(2014, 2, 2)])
         self.assertEqual(x.ticks(6), [local(2014, 2, 2)])
 
+    def test_tickFormat_year(self):
+        #formats year on New Year's"
+        fmt = TimeScale().tickFormat()
+        self.assertEqual(fmt(local(2011, 0, 1)), "2011");
+        self.assertEqual(fmt(local(2012, 0, 1)), "2012");
+        self.assertEqual(fmt(local(2013, 0, 1)), "2013");
+
+    def test_tickFormat_month(self):
+        #formats month on the 1st of each month"
+        fmt = TimeScale().tickFormat()
+        self.assertEqual(fmt(local(2011, 1, 1)), "February");
+        self.assertEqual(fmt(local(2011, 2, 1)), "March");
+        self.assertEqual(fmt(local(2011, 3, 1)), "April");
+
+    def test_tickFormat_month_year(self):
+        #formats week on Sunday midnight"
+        fmt = TimeScale().tickFormat()
+        self.assertEqual(fmt(local(2011, 1, 6)), "Feb 06");
+        self.assertEqual(fmt(local(2011, 1, 13)), "Feb 13");
+        self.assertEqual(fmt(local(2011, 1, 20)), "Feb 20");
+
+    def test_tickFormat_day_year(self):
+        #formats date on midnight"
+        fmt = TimeScale().tickFormat()
+        self.assertEqual(fmt(local(2011, 1, 2)), "Wed 02");
+        self.assertEqual(fmt(local(2011, 1, 3)), "Thu 03");
+        self.assertEqual(fmt(local(2011, 1, 4)), "Fri 04");
+
+    def test_tickFormat_time_ampm(self):
+        #formats hour on minute zero"
+        fmt = TimeScale().tickFormat()
+        self.assertEqual(fmt(local(2011, 1, 2, 11)), "11 AM");
+        self.assertEqual(fmt(local(2011, 1, 2, 12)), "12 PM");
+        self.assertEqual(fmt(local(2011, 1, 2, 13)), "01 PM");
+
+    def test_tickFormat_time(self):
+        #formats minute on second zero"
+        fmt = TimeScale().tickFormat()
+        self.assertEqual(fmt(local(2011, 1, 2, 11, 59)), "11:59");
+        self.assertEqual(fmt(local(2011, 1, 2, 12,  1)), "12:01");
+        self.assertEqual(fmt(local(2011, 1, 2, 12,  2)), "12:02");
+
+    def test_tickFormat_minutes(self):
+        #otherwise, formats second"
+        fmt = TimeScale().tickFormat()
+        self.assertEqual(fmt(local(2011, 1, 2, 12,  1,  9)), ":09");
+        self.assertEqual(fmt(local(2011, 1, 2, 12,  1, 10)), ":10");
+        self.assertEqual(fmt(local(2011, 1, 2, 12,  1, 11)), ":11");
 
 
 if __name__ == '__main__':
