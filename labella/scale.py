@@ -108,7 +108,8 @@ def d3_scale_linearTicks(domain, m):
 def d3_scale_linearTickFormat(domain, m, fmt=None):
     therange = d3_scale_linearTickRange(domain, m)
     # format not None is not implemented
-    fmt = "." + str(d3_scale_linearPrecision(therange[2])) + "f"
+    decimals = max(0, d3_scale_linearPrecision(therange[2]))
+    fmt = "." + str(decimals) + "f"
     fmtstr = '{:%s}' % fmt
     return lambda x : fmtstr.format(x)
 

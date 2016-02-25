@@ -38,7 +38,7 @@ DEFAULT_OPTIONS = {
         'margin': {'left': 20, 'right': 20, 'top': 20, 'bottom': 20},
         'initialWidth': 400,
         'initialHeight': 400,
-        'scale': TimeScale,
+        'scale': TimeScale(),
         'domain': None,
         'direction': 'right',
         'dotRadius': 3,
@@ -101,6 +101,7 @@ class Timeline(object):
         # parse items
         self.items = self.parse_items(dicts)
         self.rotate_items()
+        self.init_axis(dicts)
 
     def rotate_items(self):
         if self.direction in ['left', 'right']:
@@ -112,6 +113,10 @@ class Timeline(object):
         items = []
         for d in dicts:
             time = d['time']
+            if isinstance(time, datetime.date):
+                time = datetime.datetime.combine(time, 
+                        datetime.datetime.min.time())
+                d['time'] = time
             text = self.textFn(d)
             if text:
                 width = d.get('width', None)
@@ -137,14 +142,14 @@ class Timeline(object):
         if self.options['domain']:
             self.options['scale'].domain(self.options['domain'])
         else:
-            self.options['scale'].domain(d3_extent(data, 
-                self.options['timeFn']))
+            self.options['scale'].domain(
+                    d3_extent(data, self.options['timeFn']))
             self.options['scale'].nice()
         innerWidth, innerHeight = self.getInnerDims()
         if self.options['direction'] in ['left', 'right']:
-            self.options['scale'].set_range([0, innerHeight])
+            self.options['scale'].range([0, innerHeight])
         else:
-            self.options['scale'].set_range([0, innerWidth])
+            self.options['scale'].range([0, innerWidth])
 
     def parse_time(self, time, width=None, text=None, data=None):
         if isinstance(time, datetime.datetime):
@@ -168,7 +173,10 @@ class Timeline(object):
         return innerWidth, innerHeight
 
     def get_nodes(self):
-        nodes = [it.to_node() for it in self.items]
+        nodes = []
+        for it in self.items:
+            n = Node(self.timePos(it.data), it.width, data=it)
+            nodes.append(n)
         for node in nodes:
             node.w = (node.data.width + self.options['labelPadding']['left'] +
                     self.options['labelPadding']['right'])
@@ -239,6 +247,7 @@ class TimelineSVG(Timeline):
         ElementTree.SubElement(trans, 'g', attrib={'class': 'dummy-layer'})
         mainLayer = self.add_main(trans)
         self.add_timeline(mainLayer)
+        self.add_axis(mainLayer)
         self.add_links(mainLayer)
         self.add_labels(mainLayer)
         self.add_dots(mainLayer)
@@ -264,6 +273,35 @@ class TimelineSVG(Timeline):
             attrib['transform'] = 'translate(0, 0)'
         layer = ElementTree.SubElement(trans, 'g', attrib=attrib)
         return layer
+
+    def add_axis(self, trans):
+        layer = ElementTree.SubElement(trans, 'g', attrib={'class': 
+            'axis-layer'})
+        scale = self.options['scale']
+        tick_text = map(scale.tickFormat(), scale.ticks())
+        tick_pos = map(scale, scale.ticks())
+        for pos, text in zip(tick_pos, tick_text):
+            trans = 'translate(%.16f, 0)' % pos
+            attrib = {
+                    'class': 'tick',
+                    'transform': trans,
+                    'style': 'opacity: 1;'
+                    }
+            group = ElementTree.SubElement(layer, 'g', attrib=attrib)
+            line_attr = {
+                    'y2': '-6',
+                    'x2': '0',
+                    'style': 'stroke-width: 1px; stroke: #222;'
+                    }
+            ElementTree.SubElement(group, 'line', attrib=line_attr)
+            text_attr = {
+                    'dy': '0em',
+                    'style': 'text-anchor: middle;',
+                    'y': '-9',
+                    'x': '0',
+                    }
+            thetext = ElementTree.SubElement(group, 'text', attrib=text_attr)
+            thetext.text = text
 
     def add_timeline(self, trans):
         layer = ElementTree.SubElement(trans, 'g')
