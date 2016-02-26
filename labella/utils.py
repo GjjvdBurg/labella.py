@@ -1,5 +1,5 @@
 
-CATEGORY_10 = [
+COLOR_10 = [
         '#1f77b4',
         '#ff7f0e',
         '#2ca02c',
@@ -12,7 +12,7 @@ CATEGORY_10 = [
         '#17becf',
         ]
 
-CATEGORY_20 = [
+COLOR_20 = [
         '#1f77b4',
         '#aec7e8',
         '#ff7f0e',
@@ -34,17 +34,6 @@ CATEGORY_20 = [
         '#17becf',
         '#9edae5',
         ]
-
-def color_10(i):
-    colorscale = CATEGORY_10
-    return colorscale[i%len(colorscale)]
-
-def color_20(i):
-    colorscale = CATEGORY_20
-    return colorscale[i%len(colorscale)]
-
-def color_code(i, colorscale=CATEGORY_10):
-    return colorscale[i%len(colorscale)]
 
 def hex2dec(s):
     return int(s, 16)

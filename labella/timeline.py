@@ -1,6 +1,6 @@
 
 """
-This class is not included in the original Labella.js, but is partially 
+This class is not included in the original Labella.js, but is partially
 modelled on https://kristw.github.io/d3kit-timeline/
 
 The idea is to make a simple timeline of objects which have text or no text.
@@ -30,7 +30,7 @@ from labella.node import Node
 from labella.renderer import Renderer
 from labella.scale import TimeScale, d3_extent
 from labella.tex import text_dimensions
-from labella.utils import hex2rgbstr
+from labella.utils import hex2rgbstr, COLOR_10, COLOR_20
 
 DEFAULT_WIDTH = 50
 
@@ -46,15 +46,21 @@ DEFAULT_OPTIONS = {
         'labella': {},
         'keyFn': None,
         'timeFn': lambda d: d['time'],
-        'textFn': lambda d: d['text'],
+        'textFn': lambda d: d['text'] if 'text' in d else None,
         'dotColor': '#222',
         'labelBgColor': '#222',
         'labelTextColor': '#fff',
         'linkColor': '#222',
-        'labelPadding': {'left': 4, 'right': 4, 'top': 3, 'bottom': 2},
-        'textXOffset': '0.2em',
+        'labelPadding': {'left': 2, 'right': 2, 'top': 3, 'bottom': 2},
+        'textXOffset': '0.15em',
         'textYOffset': '0.85em',
+        'showTicks': True,
         }
+
+def d3_functor(v):
+    if callable(v):
+        return v
+    return lambda x : v
 
 class Item(object):
     def __init__(self, time, width=DEFAULT_WIDTH, text=None,
@@ -84,7 +90,7 @@ class Item(object):
 
     def __str__(self):
         s = ("Item(time=%r, text=%r, numeric_value=%r, width=%r,"
-                " height=%r, data=%r)" % (self.time, self.text, 
+                " height=%r, data=%r)" % (self.time, self.text,
                     self.numeric_value, self.width, self.height, self.data))
         return s
     def __repr__(self):
@@ -114,7 +120,7 @@ class Timeline(object):
         for d in dicts:
             time = d['time']
             if isinstance(time, datetime.date):
-                time = datetime.datetime.combine(time, 
+                time = datetime.datetime.combine(time,
                         datetime.datetime.min.time())
                 d['time'] = time
             text = self.textFn(d)
@@ -188,7 +194,15 @@ class Timeline(object):
 
     def compute(self):
         nodes = self.get_nodes()
-        renderer = Renderer(self.options['labella'])
+        if self.direction in ['left', 'right']:
+            nodeHeight = max((n.w for n in nodes))
+        else:
+            nodeHeight = max((n.h for n in nodes))
+        renderer = Renderer({
+            'nodeHeight': nodeHeight,
+            'layerGap': self.options['layerGap'],
+            'direction': self.options['direction']
+            })
         renderer.layout(nodes)
         force = Force(self.options['labella'])
         force.nodes(nodes)
@@ -197,20 +211,36 @@ class Timeline(object):
         renderer.layout(newnodes)
         return newnodes, renderer
 
-    def labelBgColor(self, idx):
-        if isinstance(self.options['labelBgColor'], str):
-            return self.options['labelBgColor']
-        return self.options['labelBgColor'](idx)
+    def dotColor(self, thedict, i=0):
+        if self.options['dotColor'] in [COLOR_10, COLOR_20]:
+            return self.options['dotColor'][i%len(self.options['dotColor'])]
+        dotColor = d3_functor(self.options['dotColor'])
+        return dotColor(thedict)
 
-    def labelTextColor(self, idx):
-        if isinstance(self.options['labelTextColor'], str):
-            return self.options['labelTextColor']
-        return self.options['labelTextColor'](idx)
+    def linkColor(self, thedict, i=0):
+        if self.options['linkColor'] in [COLOR_10, COLOR_20]:
+            return self.options['linkColor'][i%len(self.options['linkColor'])]
+        linkColor = d3_functor(self.options['linkColor'])
+        return linkColor(thedict)
+
+    def labelBgColor(self, thedict, i=0):
+        if self.options['labelBgColor'] in [COLOR_10, COLOR_20]:
+            return self.options['labelBgColor'][i %
+                    len(self.options['labelBgColor'])]
+        labelBgColor = d3_functor(self.options['labelBgColor'])
+        return labelBgColor(thedict)
+
+    def labelTextColor(self, thedict, i=0):
+        if self.options['labelTextColor'] in [COLOR_10, COLOR_20]:
+            return self.options['labelTextColor'][i %
+                    len(self.options['labelTextColor'])]
+        labelTextColor = d3_functor(self.options['labelTextColor'])
+        return labelTextColor(thedict)
 
     def textFn(self, thedict):
-        if not 'text' in thedict:
-            return None
         if self.options['textFn'] is None:
+            if not 'text' in thedict:
+                return None
             return thedict.get('text', None)
         return self.options['textFn'](thedict)
 
@@ -247,7 +277,8 @@ class TimelineSVG(Timeline):
         ElementTree.SubElement(trans, 'g', attrib={'class': 'dummy-layer'})
         mainLayer = self.add_main(trans)
         self.add_timeline(mainLayer)
-        self.add_axis(mainLayer)
+        if self.options['showTicks']:
+            self.add_axis(mainLayer)
         self.add_links(mainLayer)
         self.add_labels(mainLayer)
         self.add_dots(mainLayer)
@@ -275,31 +306,40 @@ class TimelineSVG(Timeline):
         return layer
 
     def add_axis(self, trans):
-        layer = ElementTree.SubElement(trans, 'g', attrib={'class': 
+        layer = ElementTree.SubElement(trans, 'g', attrib={'class':
             'axis-layer'})
         scale = self.options['scale']
         tick_text = map(scale.tickFormat(), scale.ticks())
         tick_pos = map(scale, scale.ticks())
+        line_attr = {'style': 'stroke-width: 1px; stroke: #222;'}
         for pos, text in zip(tick_pos, tick_text):
-            trans = 'translate(%.16f, 0)' % pos
+            if self.direction == 'down':
+                text_attr = {'style': 'text-anchor: middle;',
+                        'x': '0', 'y': '-9', 'dy': '0em'}
+                line_attr.update({'x2': '0', 'y2': '-6'})
+                transform = 'translate(%.16f, 0)' % pos
+            elif self.direction == 'right':
+                text_attr = {'style': 'text-anchor: end;',
+                        'x': '-9', 'y': '0', 'dy': '.32em'}
+                line_attr.update({'x2': '-6', 'y2': '0'})
+                transform = 'translate(0, %.16f)' % pos
+            elif self.direction == 'left':
+                text_attr = {'style': 'text-anchor: start;',
+                        'x': '9', 'y': '0', 'dy': '.32em'}
+                line_attr.update({'x2': '6', 'y2': '0'})
+                transform = 'translate(0, %.16f)' % pos
+            else:
+                text_attr = {'style': 'text-anchor: middle;',
+                        'x': '0', 'y': '9', 'dy': '.71em'}
+                line_attr.update({'x2': '0', 'y2': '6'})
+                transform = 'translate(%.16f, 0)' % pos
             attrib = {
                     'class': 'tick',
-                    'transform': trans,
+                    'transform': transform,
                     'style': 'opacity: 1;'
                     }
             group = ElementTree.SubElement(layer, 'g', attrib=attrib)
-            line_attr = {
-                    'y2': '-6',
-                    'x2': '0',
-                    'style': 'stroke-width: 1px; stroke: #222;'
-                    }
             ElementTree.SubElement(group, 'line', attrib=line_attr)
-            text_attr = {
-                    'dy': '0em',
-                    'style': 'text-anchor: middle;',
-                    'y': '-9',
-                    'x': '0',
-                    }
             thetext = ElementTree.SubElement(group, 'text', attrib=text_attr)
             thetext.text = text
 
@@ -314,33 +354,24 @@ class TimelineSVG(Timeline):
         attrib['style'] = 'stroke-width: 2px; stroke: #222;'
         ElementTree.SubElement(layer, 'line', attrib=attrib)
 
-    def dotColor(self, idx):
-        if isinstance(self.options['dotColor'], str):
-            return self.options['dotColor']
-        return self.options['dotColor'](idx)
-
     def add_dots(self, trans):
-        layer = ElementTree.SubElement(trans, 'g', attrib={'class': 
+        layer = ElementTree.SubElement(trans, 'g', attrib={'class':
             'dot-layer'})
         attrib = {'class': 'dot', 'r': str(self.options['dotRadius'])}
         field = 'cx' if self.direction in ['up', 'down'] else 'cy'
         for i, node in enumerate(self.nodes):
-            rgbstr = hex2rgbstr(self.dotColor(i))
+            rgbstr = hex2rgbstr(self.dotColor(node.data.data, i))
             attrib['style'] = 'fill: %s;' % rgbstr
             attrib[field] = str(node.getRoot().idealPos)
             ElementTree.SubElement(layer, 'circle', attrib=attrib)
 
-    def linkColor(self, idx):
-        if isinstance(self.options['linkColor'], str):
-            return self.options['linkColor']
-        return self.options['linkColor'](idx)
-
     def add_links(self, trans):
-        layer = ElementTree.SubElement(trans, 'g', attrib={'class': 
+        layer = ElementTree.SubElement(trans, 'g', attrib={'class':
             'link-layer'})
         attrib = {'class': 'link'}
         for i, node in enumerate(self.nodes):
-            thestyle = 'stroke: %s; ' % hex2rgbstr(self.linkColor(i))
+            thestyle = 'stroke: %s; ' % hex2rgbstr(self.linkColor(
+                node.data.data, i))
             thestyle += 'stroke-width: 2; '
             thestyle += 'fill: none;'
             attrib['style'] = thestyle
@@ -348,7 +379,7 @@ class TimelineSVG(Timeline):
             ElementTree.SubElement(layer, 'path', attrib=attrib)
 
     def add_labels(self, trans):
-        layer = ElementTree.SubElement(trans, 'g', attrib={'class': 
+        layer = ElementTree.SubElement(trans, 'g', attrib={'class':
             'label-layer'})
         if self.direction in ['left', 'right']:
             nodeHeight = max((n.w for n in self.nodes))
@@ -365,14 +396,15 @@ class TimelineSVG(Timeline):
                 'ry': '2',
                 'width': str(node.w),
                 'height': str(node.h),
-                'style': 'fill: %s;' % hex2rgbstr(self.labelBgColor(i))})
+                'style': 'fill: %s;' % hex2rgbstr(self.labelBgColor(
+                    node.data.data, i))})
             thetext = ElementTree.SubElement(theg, 'text', attrib={
                 'class': 'label-text',
                 'dy': self.options['textYOffset'],
                 'dx': self.options['textXOffset'],
                 'x': str(self.options['labelPadding']['left']),
                 'y': str(self.options['labelPadding']['top']),
-                'style': 'fill: %s;' % hex2rgbstr(self.labelTextColor(i))
+                'style': 'fill: %s;' % hex2rgbstr(self.labelTextColor(
+                    node.data.data, i))
                 })
             thetext.text = node.data.text
-
