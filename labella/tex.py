@@ -1,7 +1,8 @@
 
 import os
-import tempfile
+import shutil
 import subprocess
+import tempfile
 import unicodedata
 
 def uni2tex(text):
@@ -37,7 +38,7 @@ def uni2tex(text):
         i += 1
     return out
 
-def build_latex_doc(text, fontsize='11pt'):
+def get_latex_fontdoc(text, fontsize='11pt'):
     tex = r"""
 \documentclass[preview, {fontsize}]{{standalone}}
 \begin{{document}}
@@ -52,39 +53,58 @@ def build_latex_doc(text, fontsize='11pt'):
 """.format(fontsize=fontsize, text=uni2tex(text))
     return tex
 
-def compile_latex_doc(tex, silent=True):
+def compile_latex(fname, tmpdirname, silent=True):
+    compiler = 'latexmk'
+    compiler_args = ['--pdf', '--outdir=' + tmpdirname,
+            '--interaction=nonstopmode', fname]
+    command = [compiler] + compiler_args
+    try:
+        output = subprocess.check_output(command, stderr=subprocess.STDOUT)
+    except (OSError, IOError) as e:
+        raise(e)
+    except subprocess.CalledProcessError as e:
+        print(e.output.decode())
+        raise(e)
+    else:
+        if not silent:
+            print(output.decode())
+
+def get_latex_dims(tex, silent=True):
     with tempfile.TemporaryDirectory() as tmpdirname:
         basename = 'labella_text'
         fname = os.path.join(tmpdirname, basename + '.tex')
         with open(fname, 'w') as fid:
             fid.write(tex)
-        compiler = 'latexmk'
-        compiler_args = ['--pdf', '--outdir=' + tmpdirname, 
-                '--interaction=nonstopmode', fname]
-        command = [compiler] + compiler_args
-        try:
-            output = subprocess.check_output(command, 
-                    stderr=subprocess.STDOUT)
-        except (OSError, IOError) as e:
-            raise(e)
-        except subprocess.CalledProcessError as e:
-            print(e.output.decode())
-            raise(e)
-        else:
-            if not silent:
-                print(output.decode())
+
+        compile_latex(fname, tmpdirname, silent=silent)
+
         logname = os.path.join(tmpdirname, basename + '.log')
         with open(logname, 'r') as fid:
             lines = fid.readlines()
-        line_width = next((l for l in lines if l.startswith('LABELWIDTH')), 
+
+        line_width = next((l for l in lines if l.startswith('LABELWIDTH')),
                 None)
-        line_height = next((l for l in lines if l.startswith('LABELHEIGHT')), 
+        line_height = next((l for l in lines if l.startswith('LABELHEIGHT')),
                 None)
+
         width = line_width.strip().split(':')[-1].strip().rstrip('pt')
         height = line_height.strip().split(':')[-1].strip().rstrip('pt')
     return float(width), float(height)
 
+def build_latex_doc(tex, output_name=None, silent=True):
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        basename = 'labella_text'
+        fname = os.path.join(tmpdirname, basename + '.tex')
+        with open(fname, 'w') as fid:
+            fid.write(tex)
+
+        compile_latex(fname, tmpdirname, silent=silent)
+
+        pdfname = os.path.join(tmpdirname, basename + '.pdf')
+        if output_name:
+            shutil.copy2(pdfname, output_name)
+
 def text_dimensions(text, fontsize='11pt', silent=True):
-    tex = build_latex_doc(text, fontsize=fontsize)
-    width, height = compile_latex_doc(tex, silent=silent)
+    tex = get_latex_fontdoc(text, fontsize=fontsize)
+    width, height = get_latex_dims(tex, silent=silent)
     return width, height

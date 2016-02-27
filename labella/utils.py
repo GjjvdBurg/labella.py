@@ -48,7 +48,21 @@ def hex2rgb(code):
         rgb = (hex2dec(code[:2]), hex2dec(code[2:4]), hex2dec(code[4:6]))
     return rgb
 
+def hex2rgbf(code):
+    rgb = hex2rgb(code)
+    return [float(x)/255.0 for x in rgb]
+
 def hex2rgbstr(code):
     rgb = hex2rgb(code)
     rgbstr = ', '.join([str(x) for x in rgb])
     return 'rgb(%s)' % rgbstr
+
+def int2name(i):
+    """ Convert integer to Excel column name. """
+    div = i + 1
+    name = ""
+    while div > 0:
+        mod = (div - 1) % 26
+        name = chr(65 + mod) + name
+        div = (div - mod) // 26
+    return name

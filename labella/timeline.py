@@ -22,6 +22,7 @@ or as
 
 import datetime
 import math
+import os
 
 from xml.etree import ElementTree
 
@@ -29,8 +30,8 @@ from labella.force import Force
 from labella.node import Node
 from labella.renderer import Renderer
 from labella.scale import TimeScale, d3_extent
-from labella.tex import text_dimensions
-from labella.utils import hex2rgbstr, COLOR_10, COLOR_20
+from labella.tex import text_dimensions, build_latex_doc
+from labella.utils import COLOR_10, COLOR_20, int2name, hex2rgbf, hex2rgbstr
 
 DEFAULT_WIDTH = 50
 
@@ -246,14 +247,13 @@ class Timeline(object):
 
     def nodePos(self, d, nodeHeight):
         if self.direction == 'right':
-            return 'translate(%i, %i)' % (d.x, d.y - d.dy/2)
+            return (d.x, d.y - d.dy/2)
         elif self.direction == 'left':
-            return 'translate(%i, %i)' % (d.x - d.w + d.dx,
-                    d.y - d.dy/2)
+            return (d.x - d.w + d.dx, d.y - d.dy/2)
         elif self.direction == 'up':
-            return 'translate(%i, %i)' % (d.x - d.dx/2, d.y)
+            return (d.x - d.dx/2, d.y)
         elif self.direction == 'down':
-            return 'translate(%i, %i)' % (d.x - d.dx/2, d.y)
+            return (d.x - d.dx/2, d.y)
 
     def timePos(self, thedict):
         if self.options['scale'] is None:
@@ -388,7 +388,8 @@ class TimelineSVG(Timeline):
         for i, node in enumerate(self.nodes):
             theg = ElementTree.SubElement(layer, 'g', attrib={
                 'class': 'label-g',
-                'transform': self.nodePos(node, nodeHeight)
+                'transform': 'translate(%i, %i)' % self.nodePos(node,
+                    nodeHeight)
                 })
             ElementTree.SubElement(theg, 'rect', attrib={
                 'class': 'label-bg',
@@ -398,13 +399,205 @@ class TimelineSVG(Timeline):
                 'height': str(node.h),
                 'style': 'fill: %s;' % hex2rgbstr(self.labelBgColor(
                     node.data.data, i))})
-            thetext = ElementTree.SubElement(theg, 'text', attrib={
-                'class': 'label-text',
-                'dy': self.options['textYOffset'],
-                'dx': self.options['textXOffset'],
-                'x': str(self.options['labelPadding']['left']),
-                'y': str(self.options['labelPadding']['top']),
-                'style': 'fill: %s;' % hex2rgbstr(self.labelTextColor(
-                    node.data.data, i))
-                })
-            thetext.text = node.data.text
+            if node.data.text:
+                thetext = ElementTree.SubElement(theg, 'text', attrib={
+                    'class': 'label-text',
+                    'dy': self.options['textYOffset'],
+                    'dx': self.options['textXOffset'],
+                    'x': str(self.options['labelPadding']['left']),
+                    'y': str(self.options['labelPadding']['top']),
+                    'style': 'fill: %s;' % hex2rgbstr(self.labelTextColor(
+                        node.data.data, i))
+                    })
+                thetext.text = node.data.text
+
+class TimelineTex(Timeline):
+    def __init__(self, items, options=None):
+        self.nodes = None
+        self.renderer = None
+        super().__init__(items, options=options)
+
+    def export(self, filename, build_pdf=True):
+        self.nodes, self.renderer = self.compute()
+
+        doc = []
+        self.add_header(doc)
+        self.add_timeline(doc)
+        self.add_ticks(doc)
+        self.add_labels(doc)
+        self.add_dots(doc)
+        self.add_links(doc)
+        self.add_footer(doc)
+
+        with open(filename, 'w') as fid:
+            fid.write('\n'.join(doc))
+        if build_pdf:
+            fullname = os.path.realpath(filename)
+            root = os.path.splitext(fullname)[0]
+            output_name = root + ".pdf"
+            build_latex_doc('\n'.join(doc), output_name=output_name)
+
+    def add_header(self, doc):
+        border = ("{left}bp {right}bp {bottom}bp {top}bp".format(
+            **self.options['margin']))
+        txt = ["\\documentclass[border={%s}]{standalone}" % border,
+                "\\usepackage{tikz}",
+                "\\usepackage{xcolor}",
+                "\\usetikzlibrary{shapes.misc}",
+                "\\usetikzlibrary{backgrounds}",
+                ""]
+        doc.extend(txt)
+        self.add_header_colors(doc)
+        self.add_header_ticks(doc)
+        self.add_header_axis(doc)
+        self.add_header_labels(doc)
+        self.add_header_dots(doc)
+        self.add_header_text(doc)
+        doc.extend(["\\begin{document}", "\\begin{tikzpicture}[x=1bp,y=1bp]",
+            ""])
+
+    def add_header_colors(self, doc):
+        # Define colors
+        for i, node in enumerate(self.nodes):
+            rgb = hex2rgbf(self.dotColor(node.data.data, i))
+            doc.append("\\definecolor{dotColor%s}{rgb}{%f,%f,%f}" %
+                    (int2name(i), rgb[0], rgb[1], rgb[2]))
+        doc.append("")
+        for i, node in enumerate(self.nodes):
+            rgb = hex2rgbf(self.labelBgColor(node.data.data, i))
+            doc.append("\\definecolor{labelBgColor%s}{rgb}{%f,%f,%f}" %
+                    (int2name(i), rgb[0], rgb[1], rgb[2]))
+        doc.append("")
+        for i, node in enumerate(self.nodes):
+            rgb = hex2rgbf(self.labelTextColor(node.data.data, i))
+            doc.append("\\definecolor{labelTextColor%s}{rgb}{%f,%f,%f}" %
+                    (int2name(i), rgb[0], rgb[1], rgb[2]))
+        doc.append("")
+        for i, node in enumerate(self.nodes):
+            rgb = hex2rgbf(self.linkColor(node.data.data, i))
+            doc.append("\\definecolor{linkColor%s}{rgb}{%f,%f,%f}" %
+                    (int2name(i), rgb[0], rgb[1], rgb[2]))
+        doc.append("")
+
+    def add_header_ticks(self, doc):
+        # Define ticks
+        if not self.options['showTicks']:
+            return
+        scale = self.options['scale']
+        tick_pos = map(scale, scale.ticks())
+        for i, pos in enumerate(tick_pos):
+            doc.append("\\def\\tick%s{%.8f}" % (int2name(i), pos))
+        doc.append("")
+
+    def add_header_axis(self, doc):
+        # TODO Is this really necessary to define?
+        # Define axis
+        innerWidth, innerHeight = self.getInnerDims()
+        doc.append("\\def\\axisL{0}")
+        if self.direction in ['up', 'down']:
+            doc.append("\\def\\axisR{%i}" % innerWidth)
+        else:
+            doc.append("\\def\\axisR{%i}" % innerHeight)
+        doc.append("")
+
+    def add_header_labels(self, doc):
+        # Define labels
+        if self.direction in ['left', 'right']:
+            nodeHeight = max((n.w for n in self.nodes))
+        else:
+            nodeHeight = max((n.h for n in self.nodes))
+
+        for i, node in enumerate(self.nodes):
+            doc.append("\\def\\label%sx{%.8f}" % (int2name(i),
+                self.nodePos(node, nodeHeight)[0]))
+            doc.append("\\def\\label%sy{%.8f}" % (int2name(i),
+                self.nodePos(node, nodeHeight)[1]))
+        doc.append("")
+
+    def add_header_dots(self, doc):
+        # Define dots
+        for i, node in enumerate(self.nodes):
+            doc.append("\\def\\dot%sx{%.8f}" % (int2name(i),
+                node.getRoot().idealPos))
+        doc.append("")
+
+    def add_header_text(self, doc):
+        # Define text
+        for i, node in enumerate(self.nodes):
+            if node.data.text:
+                doc.append("\\def\\text%s{%s}" % (int2name(i),
+                    node.data.text))
+        doc.append("")
+
+    def add_timeline(self, doc):
+        doc.append("% axis")
+        if self.direction in ['up', 'down']:
+            doc.append("\\draw[thick] (\\axisL, 0) -- (\\axisR, 0);")
+        else:
+            doc.append("\\draw[thick] (0, \\axisR) -- (0, \\axisL);")
+        doc.append("")
+
+    def add_ticks(self, doc):
+        if not self.options['showTicks']:
+            return
+        doc.append("% ticks")
+        scale = self.options['scale']
+        tick_text = map(scale.tickFormat(), scale.ticks())
+        for i, text in enumerate(tick_text):
+            t = "\\tick%s" % int2name(i)
+            doc.append("\\draw (%s, 5pt) -- (%s, -5pt)\n"
+                    "node[anchor=north] {%s};" % (t, t, text))
+        doc.append("")
+
+    def add_labels(self, doc):
+        doc.append("% labels")
+        for i, node in enumerate(self.nodes):
+            ID = int2name(i)
+            lblx = "\\label%sx" % ID
+            lbly = "\\label%sy" % ID
+            txt = "\\text%s" % ID if node.data.text else ""
+            doc.append("\\filldraw[fill=labelBgColor%s, draw=labelBgColor%s, "
+                    "rounded corners=2pt]\n"
+                    "(%s, %s) rectangle (%s+%f, %s+%f)\n"
+                    "node[pos=0.5, text=labelTextColor%s] (lbl%s) {%s};" %
+                    (ID, ID, lblx, lbly, lblx, node.w, lbly, node.h, ID, ID,
+                        txt))
+        doc.append("")
+
+    def add_dots(self, doc):
+        doc.append("% dots")
+        for i, node in enumerate(self.nodes):
+            ID = int2name(i)
+            txt = ("\\draw node [circle, inner sep=0pt, minimum "
+                    "size=%spt, \nfill=dotColor%s] (circ%s) at " % 
+                    (str(self.options['dotRadius']), ID, ID))
+            if self.direction in ['up', 'down']:
+                txt += "(\\dot%sx, 0) {};" % ID
+            else:
+                txt += "(0, \\dot%sx) {};" % ID
+            doc.append(txt)
+        doc.append("")
+
+    def add_links(self, doc):
+        doc.append("% links")
+        doc.append("\\begin{scope}[on background layer]")
+        for i, node in enumerate(self.nodes):
+            ID = int2name(i)
+            txt = "\\path[shorten >= -1pt, shorten <= -1pt]\n"
+            if self.direction == 'down':
+                txt += "(lbl%s.south) edge[out=-90, in=90, " % ID
+            elif self.direction == 'up':
+                txt += "(lbl%s.north) edge[out=90, in=-90, " % ID
+            elif self.direction == "left":
+                txt += "(lbl%s.east) edge[out=0, in=180, " % ID
+            else:
+                txt += "(lbl%s.west) edge[out=180, in=0, " % ID
+            txt += "color=linkColor%s, very thick] (circ%s);" % (ID, ID)
+            doc.append(txt)
+        doc.append("\\end{scope}")
+        doc.append("")
+
+    def add_footer(self, doc):
+        doc.append("\\end{tikzpicture}")
+        doc.append("\\end{document}")
+
