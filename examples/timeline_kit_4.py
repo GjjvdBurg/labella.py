@@ -11,7 +11,7 @@ import math
 
 from datetime import date
 
-from labella.timeline import TimelineSVG
+from labella.timeline import TimelineSVG, TimelineTex
 
 def color_4(d):
     idx = math.ceil(d['episode']/3)
@@ -40,7 +40,7 @@ def main():
                 'text': 'The Force Awakens'},
             ]
 
-    tl = TimelineSVG(items, options={
+    options = {
         'initialWidth': 804,
         'initialHeight': 160,
         'direction': 'up',
@@ -54,8 +54,13 @@ def main():
             'maxPos': 800,
             'algorithm': 'simple'
             }
-        })
+        }
+
+    tl = TimelineSVG(items, options=options)
     tl.export('timeline_kit_4.svg')
+
+    tl = TimelineTex(items, options=options)
+    tl.export('timeline_kit_4.tex')
 
 if __name__ == '__main__':
     main()

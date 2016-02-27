@@ -4,7 +4,7 @@ Translation of basic_down.py to use the Timeline object.
 """
 
 from labella.scale import LinearScale
-from labella.timeline import TimelineSVG
+from labella.timeline import TimelineSVG, TimelineTex
 from labella.utils import COLOR_10
 
 def main():
@@ -24,7 +24,8 @@ def main():
             {'time': 804, 'width': 50},
             {'time': 854, 'width': 50},
             {'time': 854, 'width': 50}]
-    tl = TimelineSVG(items, options={
+
+    options = {
         'initialWidth': 1000,
         'initialHeight': 112,
         'scale': LinearScale(),
@@ -38,8 +39,13 @@ def main():
             'maxPos': 960
             },
         'showTicks': False
-        })
+        }
+
+    tl = TimelineSVG(items, options=options)
     tl.export('timeline_down.svg')
+
+    tl = TimelineTex(items, options=options)
+    tl.export('timeline_down.tex')
 
 if __name__ == '__main__':
     main()
