@@ -4,7 +4,7 @@ Translation of basic_right.py to use the Timeline object.
 """
 
 from labella.scale import LinearScale
-from labella.timeline import TimelineSVG
+from labella.timeline import TimelineSVG, TimelineTex
 from labella.utils import COLOR_10
 
 def main():
@@ -24,7 +24,8 @@ def main():
             {'time': 804, 'width': 50},
             {'time': 854, 'width': 50},
             {'time': 854, 'width': 50}]
-    tl = TimelineSVG(items, options={
+
+    options = {
         'initialWidth': 112,
         'initialHeight': 1000,
         'scale': LinearScale(),
@@ -39,8 +40,13 @@ def main():
             'nodeHeight': 12,
             },
         'showTicks': False
-        })
+        }
+
+    tl = TimelineSVG(items, options=options)
     tl.export('timeline_right.svg')
+
+    tl = TimelineTex(items, options=options)
+    tl.export('timeline_right.tex')
 
 if __name__ == '__main__':
     main()

@@ -6,7 +6,7 @@
 from datetime import date
 
 from labella.scale import LinearScale
-from labella.timeline import TimelineSVG
+from labella.timeline import TimelineSVG, TimelineTex
 
 def color5(d):
     if d['team'] == 'GER':
@@ -26,7 +26,7 @@ def main():
             {'time': 90, 'name': 'Oscar', 'team': 'BRA'},
             ]
 
-    tl = TimelineSVG(data, options={
+    options = {
         'direction': 'up',
         'initialWidth': 804,
         'initialHeight': 120,
@@ -43,8 +43,13 @@ def main():
             'algorithm': 'simple',
             },
         'labelPadding': {'left': 0, 'right': 2, 'top': 0, 'bottom': 0},
-        })
+        }
+
+    tl = TimelineSVG(data, options=options)
     tl.export('timeline_kit_5.svg')
+
+    tl = TimelineTex(data, options=options)
+    tl.export('timeline_kit_5.tex')
 
 if __name__ == '__main__':
     main()

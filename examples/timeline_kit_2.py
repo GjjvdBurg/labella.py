@@ -5,7 +5,7 @@
 
 from datetime import date
 
-from labella.timeline import TimelineSVG
+from labella.timeline import TimelineSVG, TimelineTex
 
 def main():
     items = [
@@ -25,7 +25,7 @@ def main():
                 'text': 'The Force Awakens'},
             ]
 
-    tl = TimelineSVG(items, options={
+    options = {
         'initialWidth': 400,
         'initialHeight': 250,
         'direction': 'left',
@@ -39,8 +39,13 @@ def main():
             'nodeHeight': 12,
             },
         'showTicks': False
-        })
+        }
+
+    tl = TimelineSVG(items, options=options)
     tl.export('timeline_kit_2.svg')
+
+    tl = TimelineTex(items, options=options)
+    tl.export('timeline_kit_2.tex')
 
 if __name__ == '__main__':
     main()
