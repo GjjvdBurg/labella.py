@@ -58,6 +58,8 @@ a minimal working example for exporting to PDF:
 >>> tl.export('minimal.tex')
 ```
 
+See also the documentation [here](docs).
+
 Installation
 ------------
 
