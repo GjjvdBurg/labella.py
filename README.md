@@ -70,6 +70,10 @@ or:
 python setup.py install --user
 ```
 
+**Note:** Labella.py requires a working LaTeX distribution for both SVG and 
+PDF output (see also [the documentation](docs/)), and has only been tested on 
+Linux.
+
 Author
 ------
 
