@@ -8,11 +8,14 @@ def read(fname):
 
 setup(
         name='labella',
-        version='0.1',
+        version='0.9',
         description='Python version of Labella.js',
         long_description=read('README.md'),
         author='Gertjan van den Burg',
         author_email='gertjanvandenburg@gmail.com',
         license='Apache v2',
-        packages=find_packages()
+        packages=find_packages(),
+        install_requires = [
+            'intervaltree'
+            ]
         )
