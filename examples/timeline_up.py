@@ -1,5 +1,5 @@
 """
-Translation of basic_up.py to use the Timeline object.
+Basic timeline without text in the labels, up direction.
 
 """
 

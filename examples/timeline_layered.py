@@ -1,5 +1,5 @@
 """
-Translation of basic_down.py to use the Timeline object.
+Basic timeline example in the down direction with multiple layers.
 
 """
 

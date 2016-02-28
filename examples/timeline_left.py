@@ -1,5 +1,5 @@
 """
-Translation of basic_left.py to use the Timeline object.
+Basic timeline without text in the labels, left direction.
 
 """
 
