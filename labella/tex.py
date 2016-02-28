@@ -39,16 +39,15 @@ def uni2tex(text):
     return out
 
 def get_latex_fontdoc(text, fontsize='11pt'):
-    tex = r"""
-\documentclass[preview, {fontsize}]{{standalone}}
+    tex = r"""\documentclass[preview, {fontsize}]{{standalone}}
 \begin{{document}}
-{text}%%\n
-\newlength{{\lblwidth}}%%
-\newlength{{\lblheight}}%%
-\settowidth{{\lblwidth}}{{{text}}}%%
-\settoheight{{\lblheight}}{{{text}}}%%
-\typeout{{LABELWIDTH: \the\lblwidth}}%%
-\typeout{{LABELHEIGHT: \the\lblheight}}%%
+{text}%
+\newlength{{\lblwidth}}%
+\newlength{{\lblheight}}%
+\settowidth{{\lblwidth}}{{{text}}}%
+\settoheight{{\lblheight}}{{{text}}}%
+\typeout{{LABELWIDTH: \the\lblwidth}}%
+\typeout{{LABELHEIGHT: \the\lblheight}}%
 \end{{document}}
 """.format(fontsize=fontsize, text=uni2tex(text))
     return tex
