@@ -1,22 +1,13 @@
 
 """
-This class is not included in the original Labella.js, but is partially
-modelled on https://kristw.github.io/d3kit-timeline/
+This class is not included in the original Labella.js, but is modelled on 
+https://kristw.github.io/d3kit-timeline/
 
 The idea is to make a simple timeline of objects which have text or no text.
-Items must be added as either:
-
-    dicts: {'time': value, 'width': int, 'text': str} where the 'text' field
-    and the 'width' field are optional and the value field can be either a
-    date(time) instance or a float. The type must be the same for all values.
-
-or as date(time) objects:
-
-    numbers: [date(time), date(time), date(time)]
-
-or as
-
-    numbers: [float, float, float]
+Items must be added as dicts: {'time': value, 'width': int, 'text': str} where 
+the 'text' field and the 'width' field are optional and the value field can be 
+either a date(time) instance or a float. The type must be the same for all 
+values.
 
 """
 
@@ -45,7 +36,6 @@ DEFAULT_OPTIONS = {
         'dotRadius': 3,
         'layerGap': 60,
         'labella': {},
-        'keyFn': None,
         'timeFn': lambda d: d['time'],
         'textFn': lambda d: d['text'] if 'text' in d else None,
         'dotColor': '#222',
@@ -126,6 +116,9 @@ class Timeline(object):
             if isinstance(time, datetime.date):
                 time = datetime.datetime.combine(time,
                         datetime.datetime.min.time())
+                d['time'] = time
+            elif isinstance(time, datetime.time):
+                time = datetime.datetime.combine(datetime.date.today(), time)
                 d['time'] = time
             text = self.textFn(d)
             if text:
