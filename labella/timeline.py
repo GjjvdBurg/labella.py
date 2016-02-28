@@ -88,9 +88,8 @@ class Item(object):
         else:
             width, height = text_dimensions(self.text,
                     fontsize=self.tex_fontsize)
-            width = math.ceil(width + 5.0)
-            height = int(''.join([x for x in self.tex_fontsize if 
-                x.isdigit()])) + 2.0
+            width = math.ceil(width) + 4
+            height += 4
         return width, height
 
     def __str__(self):

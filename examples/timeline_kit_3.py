@@ -34,7 +34,7 @@ def main():
         'labelBgColor': COLOR_10,
         'linkColor': COLOR_10,
         'textFn': None,
-        'labelPadding': {'left': 0, 'right': 0, 'top': 0, 'bottom': 0},
+        'labelPadding': {'left': 0, 'right': 0, 'top': 1, 'bottom': 1},
         'margin': {'left': 20, 'right': 20, 'top': 30, 'bottom': 20},
         'layerGap': 40,
         'labella': {

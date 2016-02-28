@@ -27,7 +27,7 @@ def main():
 
     options = {
         'initialWidth': 1000,
-        'initialHeight': 300,
+        'initialHeight': 220,
         'scale': LinearScale(),
         'direction': 'down',
         'dotColor': '#000000',
