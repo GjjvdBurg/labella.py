@@ -30,7 +30,7 @@ from labella.force import Force
 from labella.node import Node
 from labella.renderer import Renderer
 from labella.scale import TimeScale, d3_extent
-from labella.tex import text_dimensions, build_latex_doc
+from labella.tex import text_dimensions, build_latex_doc, uni2tex
 from labella.utils import COLOR_10, COLOR_20, int2name, hex2rgbf, hex2rgbstr
 
 DEFAULT_WIDTH = 50
@@ -56,6 +56,9 @@ DEFAULT_OPTIONS = {
         'textXOffset': '0.15em',
         'textYOffset': '0.85em',
         'showTicks': True,
+        'latex': {
+            'fontsize': '11pt'
+            }
         }
 
 def d3_functor(v):
@@ -64,41 +67,42 @@ def d3_functor(v):
     return lambda x : v
 
 class Item(object):
-    def __init__(self, time, width=DEFAULT_WIDTH, text=None,
-            numeric_value=None, data=None, output_mode='svg'):
+    def __init__(self, time, width=DEFAULT_WIDTH, text=None, data=None, 
+            output_mode='svg', tex_fontsize='11pt'):
         self.time = time
         self.text = text
-        self.numeric_value = numeric_value
         self.width = width
         self.data = data
         self.output_mode = output_mode
+        self.tex_fontsize = tex_fontsize
         if self.width is None and self.text:
-            self.width, self.height = self.get_text_dimensions(output_mode)
+            self.width, self.height = self.get_text_dimensions()
         else:
             self.height = 13.0
 
-    def to_node(self):
-        return Node(self.numeric_value, self.width, data=self)
-
-    def get_text_dimensions(self, fontsize='11pt'):
+    def get_text_dimensions(self):
         if self.output_mode == 'svg':
             width, height = text_dimensions(self.text, fontsize='12pt')
             width = math.ceil(width)
             height = 14.0
         else:
-            width, height = text_dimensions(self.text, fontsize=fontsize)
+            width, height = text_dimensions(self.text,
+                    fontsize=self.tex_fontsize)
+            width = math.ceil(width + 5.0)
+            height = int(''.join([x for x in self.tex_fontsize if 
+                x.isdigit()])) + 2.0
         return width, height
 
     def __str__(self):
-        s = ("Item(time=%r, text=%r, numeric_value=%r, width=%r,"
-                " height=%r, data=%r)" % (self.time, self.text,
-                    self.numeric_value, self.width, self.height, self.data))
+        s = ("Item(time=%r, text=%r, width=%r, height=%r, data=%r)" % 
+                (self.time, self.text, self.width, self.height, self.data))
         return s
+
     def __repr__(self):
         return str(self)
 
 class Timeline(object):
-    def __init__(self, dicts, options=None):
+    def __init__(self, dicts, options=None, output_mode='svg'):
         # update timeline options
         self.options = {k:v for k,v in DEFAULT_OPTIONS.items()}
         if options:
@@ -106,7 +110,7 @@ class Timeline(object):
         self.direction = self.options['direction']
         self.options['labella']['direction'] = self.direction
         # parse items
-        self.items = self.parse_items(dicts)
+        self.items = self.parse_items(dicts, output_mode=output_mode)
         self.rotate_items()
         self.init_axis(dicts)
 
@@ -116,7 +120,7 @@ class Timeline(object):
                 if item.text:
                     item.height, item.width = item.width, item.height
 
-    def parse_items(self, dicts):
+    def parse_items(self, dicts, output_mode='svg'):
         items = []
         for d in dicts:
             time = d['time']
@@ -129,21 +133,11 @@ class Timeline(object):
                 width = d.get('width', None)
             else:
                 width = d.get('width', DEFAULT_WIDTH)
-            it = self.parse_time(time, width=width, text=text, data=d)
+            it = Item(time, width=width, text=text, data=d, 
+                    output_mode=output_mode, 
+                    tex_fontsize=self.options['latex']['fontsize'])
             items.append(it)
         return items
-
-    def scale_items(self, items):
-        innerWidth, innerHeight = self.getInnerDims()
-        minval = min((i.numeric_value for i in items))
-        maxval = max((i.numeric_value for i in items))
-        diff = maxval - minval
-        for it in items:
-            num_val = (it.numeric_value - minval)/diff
-            if self.direction in ['up', 'down']:
-                it.numeric_value = num_val * innerWidth
-            else:
-                it.numeric_value = num_val * innerHeight
 
     def init_axis(self, data):
         if self.options['domain']:
@@ -157,18 +151,6 @@ class Timeline(object):
             self.options['scale'].range([0, innerHeight])
         else:
             self.options['scale'].range([0, innerWidth])
-
-    def parse_time(self, time, width=None, text=None, data=None):
-        if isinstance(time, datetime.datetime):
-            it = Item(time, numeric_value=time.timestamp(), text=text,
-                    width=width, data=data)
-        elif isinstance(time, datetime.date):
-            it = Item(time, numeric_value=time.toordinal(), text=text,
-                    width=width, data=data)
-        else:
-            it = Item(time, numeric_value=time, text=text, width=width,
-                    data=data)
-        return it
 
     def getInnerDims(self):
         innerWidth = (self.options['initialWidth'] -
@@ -264,7 +246,7 @@ class TimelineSVG(Timeline):
     def __init__(self, items, options=None):
         self.nodes = None
         self.renderer = None
-        super().__init__(items, options=options)
+        super().__init__(items, options=options, output_mode='svg')
 
     def export(self, filename):
         self.nodes, self.renderer = self.compute()
@@ -415,18 +397,23 @@ class TimelineTex(Timeline):
     def __init__(self, items, options=None):
         self.nodes = None
         self.renderer = None
-        super().__init__(items, options=options)
+        super().__init__(items, options=options, output_mode='tex')
 
     def export(self, filename, build_pdf=True):
         self.nodes, self.renderer = self.compute()
 
         doc = []
         self.add_header(doc)
+        self.add_margin(doc)
+        self.add_main(doc)
         self.add_timeline(doc)
-        self.add_ticks(doc)
+        if self.options['showTicks']:
+            self.add_axis(doc)
+        self.add_links(doc)
         self.add_labels(doc)
         self.add_dots(doc)
-        self.add_links(doc)
+        self.close_scope(doc) # main
+        self.close_scope(doc) # margin
         self.add_footer(doc)
 
         with open(filename, 'w') as fid:
@@ -440,7 +427,9 @@ class TimelineTex(Timeline):
     def add_header(self, doc):
         border = ("{left}bp {right}bp {bottom}bp {top}bp".format(
             **self.options['margin']))
-        txt = ["\\documentclass[border={%s}]{standalone}" % border,
+        fontsize = self.options['latex']['fontsize']
+        txt = ["\\documentclass[border={%s}, %s]{standalone}" % (border,
+            fontsize),
                 "\\usepackage{tikz}",
                 "\\usepackage{xcolor}",
                 "\\usetikzlibrary{shapes.misc}",
@@ -448,12 +437,8 @@ class TimelineTex(Timeline):
                 ""]
         doc.extend(txt)
         self.add_header_colors(doc)
-        self.add_header_ticks(doc)
-        self.add_header_axis(doc)
-        self.add_header_labels(doc)
-        self.add_header_dots(doc)
         self.add_header_text(doc)
-        doc.extend(["\\begin{document}", "\\begin{tikzpicture}[x=1bp,y=1bp]",
+        doc.extend(["\\begin{document}", "\\begin{tikzpicture}[x=1bp,y=-1bp]",
             ""])
 
     def add_header_colors(self, doc):
@@ -479,27 +464,6 @@ class TimelineTex(Timeline):
                     (int2name(i), rgb[0], rgb[1], rgb[2]))
         doc.append("")
 
-    def add_header_ticks(self, doc):
-        # Define ticks
-        if not self.options['showTicks']:
-            return
-        scale = self.options['scale']
-        tick_pos = map(scale, scale.ticks())
-        for i, pos in enumerate(tick_pos):
-            doc.append("\\def\\tick%s{%.8f}" % (int2name(i), pos))
-        doc.append("")
-
-    def add_header_axis(self, doc):
-        # TODO Is this really necessary to define?
-        # Define axis
-        innerWidth, innerHeight = self.getInnerDims()
-        doc.append("\\def\\axisL{0}")
-        if self.direction in ['up', 'down']:
-            doc.append("\\def\\axisR{%i}" % innerWidth)
-        else:
-            doc.append("\\def\\axisR{%i}" % innerHeight)
-        doc.append("")
-
     def add_header_labels(self, doc):
         # Define labels
         if self.direction in ['left', 'right']:
@@ -514,85 +478,139 @@ class TimelineTex(Timeline):
                 self.nodePos(node, nodeHeight)[1]))
         doc.append("")
 
-    def add_header_dots(self, doc):
-        # Define dots
-        for i, node in enumerate(self.nodes):
-            doc.append("\\def\\dot%sx{%.8f}" % (int2name(i),
-                node.getRoot().idealPos))
-        doc.append("")
-
     def add_header_text(self, doc):
         # Define text
         for i, node in enumerate(self.nodes):
             if node.data.text:
                 doc.append("\\def\\text%s{%s}" % (int2name(i),
-                    node.data.text))
+                    uni2tex(node.data.text)))
         doc.append("")
+
+    def add_margin(self, doc):
+        x = self.options['margin']['left']
+        y = self.options['margin']['right']
+        doc.append("% shift for the margin")
+        doc.append("\\begin{scope}[shift={(%i, %i)}]" % (x, y))
+
+    def close_scope(self, doc):
+        doc.append("\\end{scope}")
+
+    def add_main(self, doc):
+        innerWidth, innerHeight = self.getInnerDims()
+        doc.append("% main layer")
+        if self.direction in ['right', 'down']:
+            x, y = 0, 0
+        elif self.direction == 'left':
+            x, y = innerWidth, 0
+        else:
+            x, y = 0, innerHeight
+        doc.append("\\begin{scope}[shift={(%i, %i)}]" % (x, y))
 
     def add_timeline(self, doc):
+        innerWidth, innerHeight = self.getInnerDims()
         doc.append("% axis")
+        doc.append("\\begin{scope}")
         if self.direction in ['up', 'down']:
-            doc.append("\\draw[thick] (\\axisL, 0) -- (\\axisR, 0);")
+            doc.append("\\draw[very thick] (0, 0) -- (%i, 0);" % innerWidth)
         else:
-            doc.append("\\draw[thick] (0, \\axisR) -- (0, \\axisL);")
+            doc.append("\\draw[very thick] (0, 0) -- (0, %i);" % innerHeight)
+        doc.append("\\end{scope}")
         doc.append("")
 
-    def add_ticks(self, doc):
-        if not self.options['showTicks']:
-            return
-        doc.append("% ticks")
+    def add_axis(self, doc):
+        doc.append("% axis layer")
+        doc.append("\\begin{scope}")
         scale = self.options['scale']
+        tick_pos = map(scale, scale.ticks())
         tick_text = map(scale.tickFormat(), scale.ticks())
-        for i, text in enumerate(tick_text):
-            t = "\\tick%s" % int2name(i)
-            doc.append("\\draw (%s, 5pt) -- (%s, -5pt)\n"
-                    "node[anchor=north] {%s};" % (t, t, text))
+        for i, tup in enumerate(zip(tick_pos, tick_text)):
+            pos, text = tup
+            if self.direction == 'up':
+                txt = "\\begin{scope}[shift={(%i, %i)}]\n" % (pos, 0)
+                txt += "\\draw[thick] (0, 0) -- (0, -6pt)\n"
+                txt += "node[anchor=north] {%s};" % (text)
+            elif self.direction == 'down':
+                txt = "\\begin{scope}[shift={(%i, %i)}]\n" % (pos, 0)
+                txt += "\\draw[thick] (0, 0) -- (0, 6pt)\n"
+                txt += "node[anchor=south] {%s};" % (text)
+            elif self.direction == 'left':
+                txt = "\\begin{scope}[shift={(%i, %i)}]\n" % (0, pos)
+                txt += "\\draw[thick] (0, 0) -- (6pt, 0)\n"
+                txt += "node[anchor=west] {%s};" % (text)
+            else:
+                txt = "\\begin{scope}[shift={(%i, %i)}]\n" % (0, pos)
+                txt += "\\draw[thick] (0, 0) -- (-6pt, 0)\n"
+                txt += "node[anchor=east] {%s};" % (text)
+            doc.append(txt)
+            doc.append("\\end{scope}")
+        doc.append("\\end{scope}")
+        doc.append("")
+
+    def add_links(self, doc):
+        doc.append("% link layer")
+        doc.append("\\begin{scope}")
+        for i, node in enumerate(self.nodes):
+            ID = int2name(i)
+            lineSteps = self.renderer.generatePath(node, tikz=True)
+            txt = ""
+            currentPos = ('0', '0')
+            lineopts = "color=linkColor%s, very thick" % ID
+            for step in lineSteps:
+                if step.startswith('M'):
+                    currentPos = step.split(' ')[1:]
+                elif step.startswith('C'):
+                    points = step.split(' ')[1:]
+                    txt += "\\draw[%s] (%s, %s) .. " % (lineopts,
+                            currentPos[0], currentPos[1])
+                    txt += "controls\n(%s, %s) " % (points[0], points[1])
+                    txt += "and (%s, %s) " % (points[2], points[3])
+                    txt += ".. (%s, %s);" % (points[4], points[5])
+                    currentPos = (points[4], points[5])
+                elif step.startswith('L'):
+                    points = step.split(' ')[1:]
+                    txt += "\n\\draw[%s] (%s, %s) -- (%s, %s);" % (lineopts,
+                            currentPos[0], currentPos[1], points[0],
+                            points[1])
+                    currentPos = (points[0], points[1])
+            doc.append(txt)
+        doc.append("\\end{scope}")
         doc.append("")
 
     def add_labels(self, doc):
-        doc.append("% labels")
+        doc.append("% label layer")
+        doc.append("\\begin{scope}")
+
+        if self.direction in ['left', 'right']:
+            nodeHeight = max((n.w for n in self.nodes))
+        else:
+            nodeHeight = max((n.h for n in self.nodes))
+
         for i, node in enumerate(self.nodes):
             ID = int2name(i)
-            lblx = "\\label%sx" % ID
-            lbly = "\\label%sy" % ID
             txt = "\\text%s" % ID if node.data.text else ""
-            doc.append("\\filldraw[fill=labelBgColor%s, draw=labelBgColor%s, "
-                    "rounded corners=2pt]\n"
-                    "(%s, %s) rectangle (%s+%f, %s+%f)\n"
-                    "node[pos=0.5, text=labelTextColor%s] (lbl%s) {%s};" %
-                    (ID, ID, lblx, lbly, lblx, node.w, lbly, node.h, ID, ID,
-                        txt))
+            doc.append("\\begin{scope}[shift={(%i, %i)}]" %
+                    (self.nodePos(node, nodeHeight)))
+            doc.append("\\fill[color=labelBgColor%s, rounded corners=2pt]\n"
+                    "(0, 0) rectangle (%s, %s) node[pos=0.5, "
+                    "text=labelTextColor%s] {%s};" % (ID, str(node.w),
+                        str(node.h), ID, txt))
+            doc.append("\\end{scope}")
+        doc.append("\\end{scope}")
         doc.append("")
 
     def add_dots(self, doc):
         doc.append("% dots")
+        doc.append("\\begin{scope}")
         for i, node in enumerate(self.nodes):
             ID = int2name(i)
+            # factor 2 added for visual similarity between pdf and svg
             txt = ("\\draw node [circle, inner sep=0pt, minimum "
-                    "size=%spt, \nfill=dotColor%s] (circ%s) at " % 
-                    (str(self.options['dotRadius']), ID, ID))
+                    "size=%sbp, \nfill=dotColor%s] at " %
+                    (str(2*self.options['dotRadius']), ID))
             if self.direction in ['up', 'down']:
-                txt += "(\\dot%sx, 0) {};" % ID
+                txt += "(%f, 0) {};" % (node.getRoot().idealPos)
             else:
-                txt += "(0, \\dot%sx) {};" % ID
-            doc.append(txt)
-        doc.append("")
-
-    def add_links(self, doc):
-        doc.append("% links")
-        doc.append("\\begin{scope}[on background layer]")
-        for i, node in enumerate(self.nodes):
-            ID = int2name(i)
-            txt = "\\path[shorten >= -1pt, shorten <= -1pt]\n"
-            if self.direction == 'down':
-                txt += "(lbl%s.south) edge[out=-90, in=90, " % ID
-            elif self.direction == 'up':
-                txt += "(lbl%s.north) edge[out=90, in=-90, " % ID
-            elif self.direction == "left":
-                txt += "(lbl%s.east) edge[out=0, in=180, " % ID
-            else:
-                txt += "(lbl%s.west) edge[out=180, in=0, " % ID
-            txt += "color=linkColor%s, very thick] (circ%s);" % (ID, ID)
+                txt += "(0, %f) {};" % (node.getRoot().idealPos)
             doc.append(txt)
         doc.append("\\end{scope}")
         doc.append("")
@@ -600,4 +618,3 @@ class TimelineTex(Timeline):
     def add_footer(self, doc):
         doc.append("\\end{tikzpicture}")
         doc.append("\\end{document}")
-
