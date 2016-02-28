@@ -115,7 +115,7 @@ class Renderer(object):
 
         return nodes
 
-    def generatePath(self, node):
+    def generatePath(self, node, tikz=False):
         options = self.options
         direction = options['direction']
         waypoints = self.getWayPoints(node)
@@ -137,5 +137,6 @@ class Renderer(object):
                 if level < len(waypoints) - 1:
                     steps.append(lineTo(current[1]))
                 prev = current
-
+        if tikz:
+            return steps
         return ' '.join(steps)
