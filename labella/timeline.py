@@ -173,6 +173,9 @@ class Timeline(object):
                     self.options['labelPadding']['bottom'])
             if self.options['direction'] in ['left', 'right']:
                 node.h, node.w = node.w, node.h
+                node.width = node.h
+            else:
+                node.width = node.w
         return nodes
 
     def compute(self):
