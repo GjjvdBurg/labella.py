@@ -425,8 +425,9 @@ class TimelineTex(Timeline):
             build_latex_doc('\n'.join(doc), output_name=output_name)
 
     def add_header(self, doc):
-        border = ("{left}bp {right}bp {bottom}bp {top}bp".format(
-            **self.options['margin']))
+        border = ("%fbp %fbp %fbp %fbp" % (self.options['margin']['left'], 
+            self.options['margin']['bottom'], self.options['margin']['right'], 
+            self.options['margin']['top']))
         fontsize = self.options['latex']['fontsize']
         txt = ["\\documentclass[border={%s}, %s]{standalone}" % (border,
             fontsize),
