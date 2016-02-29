@@ -1,12 +1,12 @@
 
 """
-This class is not included in the original Labella.js, but is modelled on 
+This class is not included in the original Labella.js, but is modelled on
 https://kristw.github.io/d3kit-timeline/
 
 The idea is to make a simple timeline of objects which have text or no text.
-Items must be added as dicts: {'time': value, 'width': int, 'text': str} where 
-the 'text' field and the 'width' field are optional and the value field can be 
-either a date(time) instance or a float. The type must be the same for all 
+Items must be added as dicts: {'time': value, 'width': int, 'text': str} where
+the 'text' field and the 'width' field are optional and the value field can be
+either a date(time) instance or a float. The type must be the same for all
 values.
 
 """
@@ -60,7 +60,7 @@ def d3_functor(v):
     return lambda x : v
 
 class Item(object):
-    def __init__(self, time, width=DEFAULT_WIDTH, text=None, data=None, 
+    def __init__(self, time, width=DEFAULT_WIDTH, text=None, data=None,
             output_mode='svg', tex_fontsize='11pt'):
         self.time = time
         self.text = text
@@ -86,7 +86,7 @@ class Item(object):
         return width, height
 
     def __str__(self):
-        s = ("Item(time=%r, text=%r, width=%r, height=%r, data=%r)" % 
+        s = ("Item(time=%r, text=%r, width=%r, height=%r, data=%r)" %
                 (self.time, self.text, self.width, self.height, self.data))
         return s
 
@@ -133,8 +133,8 @@ class Timeline(object):
                 width = d.get('width', None)
             else:
                 width = d.get('width', DEFAULT_WIDTH)
-            it = Item(time, width=width, text=text, data=d, 
-                    output_mode=output_mode, 
+            it = Item(time, width=width, text=text, data=d,
+                    output_mode=output_mode,
                     tex_fontsize=self.options['latex']['fontsize'])
             items.append(it)
         return items
