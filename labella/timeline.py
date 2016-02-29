@@ -47,7 +47,10 @@ DEFAULT_OPTIONS = {
         'textYOffset': '0.85em',
         'showTicks': True,
         'latex': {
-            'fontsize': '11pt'
+            'fontsize': '11pt',
+            'axisThickness': 'very thick',
+            'tickThickness': 'thick',
+            'tickCross': False
             }
         }
 
@@ -92,6 +95,11 @@ class Item(object):
 
 class Timeline(object):
     def __init__(self, dicts, options=None, output_mode='svg'):
+        # update latex options
+        latex_opts = {k:v for k,v in DEFAULT_OPTIONS['latex'].items()}
+        if 'latex' in options:
+            latex_opts.update(options['latex'])
+        options['latex'] = latex_opts
         # update timeline options
         self.options = {k:v for k,v in DEFAULT_OPTIONS.items()}
         if options:
@@ -503,9 +511,11 @@ class TimelineTex(Timeline):
         doc.append("% axis")
         doc.append("\\begin{scope}")
         if self.direction in ['up', 'down']:
-            doc.append("\\draw[very thick] (0, 0) -- (%i, 0);" % innerWidth)
+            doc.append("\\draw[%s] (0, 0) -- (%i, 0);" %
+                    (self.options['latex']['axisThickness'], innerWidth))
         else:
-            doc.append("\\draw[very thick] (0, 0) -- (0, %i);" % innerHeight)
+            doc.append("\\draw[%s] (0, 0) -- (0, %i);" %
+                    (self.options['latex']['axisThickness'], innerHeight))
         doc.append("\\end{scope}")
         doc.append("")
 
@@ -515,23 +525,31 @@ class TimelineTex(Timeline):
         scale = self.options['scale']
         tick_pos = map(scale, scale.ticks())
         tick_text = map(scale.tickFormat(), scale.ticks())
+        if self.options['latex']['tickCross']:
+            tickstart = '6pt'
+        else:
+            tickstart = '0'
         for i, tup in enumerate(zip(tick_pos, tick_text)):
             pos, text = tup
             if self.direction == 'up':
                 txt = "\\begin{scope}[shift={(%i, %i)}]\n" % (pos, 0)
-                txt += "\\draw[thick] (0, 0) -- (0, -6pt)\n"
+                txt += ("\\draw[%s] (0, %s) -- (0, -6pt)\n" %
+                        (self.options['latex']['tickThickness'], tickstart))
                 txt += "node[anchor=north] {%s};" % (text)
             elif self.direction == 'down':
                 txt = "\\begin{scope}[shift={(%i, %i)}]\n" % (pos, 0)
-                txt += "\\draw[thick] (0, 0) -- (0, 6pt)\n"
+                txt += ("\\draw[%s] (0, -%s) -- (0, 6pt)\n" %
+                        (self.options['latex']['tickThickness'], tickstart))
                 txt += "node[anchor=south] {%s};" % (text)
             elif self.direction == 'left':
                 txt = "\\begin{scope}[shift={(%i, %i)}]\n" % (0, pos)
-                txt += "\\draw[thick] (0, 0) -- (6pt, 0)\n"
+                txt += ("\\draw[%s] (-%s, 0) -- (6pt, 0)\n" %
+                        (self.options['latex']['tickThickness'], tickstart))
                 txt += "node[anchor=west] {%s};" % (text)
             else:
                 txt = "\\begin{scope}[shift={(%i, %i)}]\n" % (0, pos)
-                txt += "\\draw[thick] (0, 0) -- (-6pt, 0)\n"
+                txt += ("\\draw[%s] (%s, 0) -- (-6pt, 0)\n" %
+                        (self.options['latex']['tickThickness'], tickstart))
                 txt += "node[anchor=east] {%s};" % (text)
             doc.append(txt)
             doc.append("\\end{scope}")

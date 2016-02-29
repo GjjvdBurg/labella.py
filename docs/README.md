@@ -18,8 +18,17 @@ Options that are new and not part of
 | option | default | description |
 | ------ | ------- | ----------- |
 | textXOffset | 0.15em | horizontal offset for text within a label, used for SVG output |
-| showTicks | True | boolean for showing ticks on the axis 
-| latex | `{'fontsize': '11pt'}` | options for LaTeX, only includes fontsize specification now |
+| showTicks | True | boolean for showing ticks on the axis |
+| latex | (see below) | options for LaTeX, see below. |
+
+Options for LaTeX are:
+
+| option | default | description |
+| ------ | ------- | ----------- |
+| fontsize | '11pt' | fontsize of the text in LaTeX document |
+| axisThickness | 'very thick' | thickness of the axis in TikZ language |
+| tickThickness | 'thick' | tickness of the tick lines in TikZ language |
+| tickCross | False | boolean for ticks to cross the axis or stay on one side |
 
 Input Specification
 -------------------
