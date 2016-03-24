@@ -574,6 +574,8 @@ class TimelineTex(Timeline):
                     currentPos = step.split(' ')[1:]
                 elif step.startswith('C'):
                     points = step.split(' ')[1:]
+                    if txt:
+                        txt += "\n"
                     txt += "\\draw[%s] (%s, %s) .. " % (lineopts,
                             currentPos[0], currentPos[1])
                     txt += "controls\n(%s, %s) " % (points[0], points[1])
@@ -582,7 +584,9 @@ class TimelineTex(Timeline):
                     currentPos = (points[4], points[5])
                 elif step.startswith('L'):
                     points = step.split(' ')[1:]
-                    txt += "\n\\draw[%s] (%s, %s) -- (%s, %s);" % (lineopts,
+                    if txt:
+                        txt += "\n"
+                    txt += "\\draw[%s] (%s, %s) -- (%s, %s);" % (lineopts,
                             currentPos[0], currentPos[1], points[0],
                             points[1])
                     currentPos = (points[0], points[1])
