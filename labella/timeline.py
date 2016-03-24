@@ -108,8 +108,15 @@ class Timeline(object):
         self.options['labella']['direction'] = self.direction
         # parse items
         self.items = self.parse_items(dicts, output_mode=output_mode)
+        self.equal_heights()
         self.rotate_items()
         self.init_axis(dicts)
+
+    def equal_heights(self):
+        maxheight = max((x.height for x in self.items))
+        for item in self.items:
+            if item.text:
+                item.height = maxheight
 
     def rotate_items(self):
         if self.direction in ['left', 'right']:
@@ -609,9 +616,9 @@ class TimelineTex(Timeline):
             doc.append("\\begin{scope}[shift={(%i, %i)}]" %
                     (self.nodePos(node, nodeHeight)))
             doc.append("\\fill[color=labelBgColor%s, rounded corners=2pt]\n"
-                    "(0, 0) rectangle (%s, %s) node[pos=0.5, "
-                    "text=labelTextColor%s] {%s};" % (ID, str(node.w),
-                        str(node.h), ID, txt))
+                    "(0, 0) rectangle (%s, %s) node[midway, yshift=-.75bp, "
+                    "anchor=center, text=labelTextColor%s] {\\strut %s};" % 
+                    (ID, str(node.w), str(node.h), ID, txt))
             doc.append("\\end{scope}")
         doc.append("\\end{scope}")
         doc.append("")
