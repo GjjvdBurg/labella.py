@@ -50,6 +50,7 @@ DEFAULT_OPTIONS = {
             'fontsize': '11pt',
             'axisThickness': 'very thick',
             'tickThickness': 'thick',
+            'linkThickness': 'very thick',
             'tickCross': False
             }
         }
@@ -575,7 +576,8 @@ class TimelineTex(Timeline):
             lineSteps = self.renderer.generatePath(node, tikz=True)
             txt = ""
             currentPos = ('0', '0')
-            lineopts = "color=linkColor%s, very thick" % ID
+            lineopts = "color=linkColor%s, %s" % (ID,
+                    self.options['latex']['linkThickness'])
             for step in lineSteps:
                 if step.startswith('M'):
                     currentPos = step.split(' ')[1:]

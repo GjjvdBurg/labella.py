@@ -28,6 +28,7 @@ Options for LaTeX are:
 | fontsize | '11pt' | fontsize of the text in LaTeX document |
 | axisThickness | 'very thick' | thickness of the axis in TikZ language |
 | tickThickness | 'thick' | tickness of the tick lines in TikZ language |
+| linkThickness | 'very thick' | thickness of the link linkes in TikZ language |
 | tickCross | False | boolean for ticks to cross the axis or stay on one side |
 
 Input Specification
