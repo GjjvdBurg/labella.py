@@ -22,7 +22,7 @@ from labella.node import Node
 from labella.renderer import Renderer
 from labella.scale import TimeScale, d3_extent
 from labella.tex import text_dimensions, build_latex_doc, uni2tex
-from labella.utils import COLOR_10, COLOR_20, int2name, hex2rgbf, hex2rgbstr
+from labella.utils import int2name, hex2rgbf, hex2rgbstr
 
 DEFAULT_WIDTH = 50
 
@@ -206,26 +206,26 @@ class Timeline(object):
         return newnodes, renderer
 
     def dotColor(self, thedict, i=0):
-        if self.options['dotColor'] in [COLOR_10, COLOR_20]:
+        if isinstance(self.options['dotColor'], list):
             return self.options['dotColor'][i%len(self.options['dotColor'])]
         dotColor = d3_functor(self.options['dotColor'])
         return dotColor(thedict)
 
     def linkColor(self, thedict, i=0):
-        if self.options['linkColor'] in [COLOR_10, COLOR_20]:
+        if isinstance(self.options['linkColor'], list):
             return self.options['linkColor'][i%len(self.options['linkColor'])]
         linkColor = d3_functor(self.options['linkColor'])
         return linkColor(thedict)
 
     def labelBgColor(self, thedict, i=0):
-        if self.options['labelBgColor'] in [COLOR_10, COLOR_20]:
+        if isinstance(self.options['labelBgColor'], list):
             return self.options['labelBgColor'][i %
                     len(self.options['labelBgColor'])]
         labelBgColor = d3_functor(self.options['labelBgColor'])
         return labelBgColor(thedict)
 
     def labelTextColor(self, thedict, i=0):
-        if self.options['labelTextColor'] in [COLOR_10, COLOR_20]:
+        if isinstance(self.options['labelTextColor'], list):
             return self.options['labelTextColor'][i %
                     len(self.options['labelTextColor'])]
         labelTextColor = d3_functor(self.options['labelTextColor'])

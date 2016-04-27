@@ -61,13 +61,13 @@ following options to a TimelineSVG or TimelineTex object:
 
 For these options the color can be given as a three letter hex code (e.g. 
 `#222`), a six letter hex code (e.g. `#45f23a`), a user-defined function, a 
-lambda expression, or by a default color scheme. The default color schemes 
-that are implemented are available in `labella.utils` and are known as 
-`COLOR_10` and `COLOR_20`, corresponding to the category 10 and category 20 
-[categorical colors in 
-d3](https://github.com/mbostock/d3/wiki/Ordinal-Scales).  When either of these 
-are used, the colors are used in order from small time value to large time 
-value, looping around when necessary.
+lambda expression, or by a list of colors. The default color schemes that are 
+implemented are available in `labella.utils` and are known as `COLOR_10` and 
+`COLOR_20`, corresponding to the category 10 and category 20 [categorical 
+colors in d3](https://github.com/mbostock/d3/wiki/Ordinal-Scales). These are 
+defined as lists of 10 and 20 colors respectively. When lists of colors are 
+used, the colors are used in order from small time value to large time value, 
+looping around when necessary.
 
 Scales
 ------
