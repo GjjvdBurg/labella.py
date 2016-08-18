@@ -46,8 +46,11 @@ DEFAULT_OPTIONS = {
         'textXOffset': '0.15em',
         'textYOffset': '0.85em',
         'showTicks': True,
+        'borderColor': '#000',
+        'showBorder': False,
         'latex': {
             'fontsize': '11pt',
+            'borderThickness': 'very thick',
             'axisThickness': 'very thick',
             'tickThickness': 'thick',
             'linkThickness': 'very thick',
@@ -223,6 +226,9 @@ class Timeline(object):
     def labelTextColor(self, thedict, i=0):
         return self.colorFunc('labelTextColor', thedict, i=i)
 
+    def borderColor(self, thedict, i=0):
+        return self.colorFunc('borderColor', thedict, i=i)
+
     def textFn(self, thedict):
         if self.options['textFn'] is None:
             if not 'text' in thedict:
@@ -376,14 +382,19 @@ class TimelineSVG(Timeline):
                 'transform': 'translate(%i, %i)' % self.nodePos(node,
                     nodeHeight)
                 })
+            thestyle = ('fill:%s;' % 
+                    hex2rgbstr(self.labelBgColor(node.data.data, i)))
+            if self.options['showBorder']:
+                thestyle += ('stroke-width:1;stroke:%s' % 
+                        hex2rgbstr(self.borderColor(node.data.data, i)))
             ElementTree.SubElement(theg, 'rect', attrib={
                 'class': 'label-bg',
                 'rx': '2',
                 'ry': '2',
                 'width': str(node.w),
                 'height': str(node.h),
-                'style': 'fill: %s;' % hex2rgbstr(self.labelBgColor(
-                    node.data.data, i))})
+                'style': thestyle
+                })
             if node.data.text:
                 thetext = ElementTree.SubElement(theg, 'text', attrib={
                     'class': 'label-text',
@@ -465,6 +476,13 @@ class TimelineTex(Timeline):
         for i, node in enumerate(self.nodes):
             rgb = hex2rgbf(self.linkColor(node.data.data, i))
             doc.append("\\definecolor{linkColor%s}{rgb}{%f,%f,%f}" %
+                    (int2name(i), rgb[0], rgb[1], rgb[2]))
+        doc.append("")
+        for i, node in enumerate(self.nodes):
+            if not self.options['showBorder']:
+                return
+            rgb = hex2rgbf(self.borderColor(node.data.data, i))
+            doc.append("\\definecolor{borderColor%s}{rgb}{%f,%f,%f}" % 
                     (int2name(i), rgb[0], rgb[1], rgb[2]))
         doc.append("")
 
@@ -609,10 +627,18 @@ class TimelineTex(Timeline):
             txt = "\\text%s" % ID if node.data.text else ""
             doc.append("\\begin{scope}[shift={(%i, %i)}]" %
                     (self.nodePos(node, nodeHeight)))
-            doc.append("\\fill[color=labelBgColor%s, rounded corners=2pt]\n"
-                    "(0, 0) rectangle (%s, %s) node[midway, yshift=-.75bp, "
-                    "anchor=center, text=labelTextColor%s] {\\strut %s};" % 
-                    (ID, str(node.w), str(node.h), ID, txt))
+            if self.options['showBorder']:
+                doc.append("\\draw[%s, borderColor%s, fill=labelBgColor%s, "
+                        "rounded corners=2pt]\n"
+                        "(0, 0) rectangle (%s, %s) node[midway, yshift=-.75bp,"
+                        " anchor=center, text=labelTextColor%s] {\\strut %s};" 
+                        % (self.options['latex']['borderThickness'], ID, ID, 
+                            str(node.w), str(node.h), ID, txt))
+            else:
+                doc.append("\\fill[color=labelBgColor%s, rounded corners=2pt]\n"
+                        "(0, 0) rectangle (%s, %s) node[midway, yshift=-.75bp, "
+                        "anchor=center, text=labelTextColor%s] {\\strut %s};" % 
+                        (ID, str(node.w), str(node.h), ID, txt))
             doc.append("\\end{scope}")
         doc.append("\\end{scope}")
         doc.append("")

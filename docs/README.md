@@ -19,6 +19,8 @@ Options that are new and not part of
 | ------ | ------- | ----------- |
 | textXOffset | 0.15em | horizontal offset for text within a label, used for SVG output |
 | showTicks | True | boolean for showing ticks on the axis |
+| showBorder | False | boolean for showing border around a label |
+| borderColor | #000 | color of the border around a label |
 | latex | (see below) | options for LaTeX, see below. |
 
 Options for LaTeX are:
@@ -27,6 +29,7 @@ Options for LaTeX are:
 | ------ | ------- | ----------- |
 | fontsize | '11pt' | fontsize of the text in LaTeX document |
 | axisThickness | 'very thick' | thickness of the axis in TikZ language |
+| borderThickness | 'very thick' | thickness of the border around a label in Tikz language |
 | tickThickness | 'thick' | tickness of the tick lines in TikZ language |
 | linkThickness | 'very thick' | thickness of the link linkes in TikZ language |
 | tickCross | False | boolean for ticks to cross the axis or stay on one side |
@@ -58,6 +61,7 @@ following options to a TimelineSVG or TimelineTex object:
 - labelBgColor
 - labelTextColor
 - linkColor
+- borderColor
 
 For these options the color can be given as a three letter hex code (e.g. 
 `#222`), a six letter hex code (e.g. `#45f23a`), a user-defined function, a 
