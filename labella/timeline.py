@@ -54,7 +54,8 @@ DEFAULT_OPTIONS = {
             'axisThickness': 'very thick',
             'tickThickness': 'thick',
             'linkThickness': 'very thick',
-            'tickCross': False
+            'tickCross': False,
+            'preamble': ''
             }
         }
 
@@ -65,13 +66,14 @@ def d3_functor(v):
 
 class Item(object):
     def __init__(self, time, width=DEFAULT_WIDTH, text=None, data=None,
-            output_mode='svg', tex_fontsize='11pt'):
+            output_mode='svg', tex_fontsize='11pt', tex_preamble=None):
         self.time = time
         self.text = text
         self.width = width
         self.data = data
         self.output_mode = output_mode
         self.tex_fontsize = tex_fontsize
+        self.tex_preamble = tex_preamble
         if self.width is None and self.text:
             self.width, self.height = self.get_text_dimensions()
         else:
@@ -84,7 +86,7 @@ class Item(object):
             height = 14.0
         else:
             width, height = text_dimensions(self.text,
-                    fontsize=self.tex_fontsize)
+                    fontsize=self.tex_fontsize, preamble=self.tex_preamble)
             width = math.ceil(width) + 4
             height += 4
         return width, height
@@ -146,7 +148,8 @@ class Timeline(object):
                 width = d.get('width', DEFAULT_WIDTH)
             it = Item(time, width=width, text=text, data=d,
                     output_mode=output_mode,
-                    tex_fontsize=self.options['latex']['fontsize'])
+                    tex_fontsize=self.options['latex']['fontsize'], 
+                    tex_preamble=self.options['latex']['preamble'])
             items.append(it)
         return items
 
@@ -445,6 +448,7 @@ class TimelineTex(Timeline):
         fontsize = self.options['latex']['fontsize']
         txt = ["\\documentclass[border={%s}, %s]{standalone}" % (border,
             fontsize),
+                self.options['latex']['preamble'],
                 "\\usepackage{tikz}",
                 "\\usepackage{xcolor}",
                 "\\usetikzlibrary{shapes.misc}",

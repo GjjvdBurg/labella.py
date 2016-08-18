@@ -33,6 +33,7 @@ Options for LaTeX are:
 | tickThickness | 'thick' | tickness of the tick lines in TikZ language |
 | linkThickness | 'very thick' | thickness of the link linkes in TikZ language |
 | tickCross | False | boolean for ticks to cross the axis or stay on one side |
+| preamble | '' | raw (!) string for the preamble of generated LaTeX documents |
 
 Input Specification
 -------------------

@@ -38,8 +38,9 @@ def uni2tex(text):
         i += 1
     return out
 
-def get_latex_fontdoc(text, fontsize='11pt'):
+def get_latex_fontdoc(text, fontsize='11pt', preamble=''):
     tex = r"""\documentclass[preview, {fontsize}]{{standalone}}
+{preamble}%
 \begin{{document}}
 {text}%
 \newlength{{\lblwidth}}%
@@ -49,7 +50,7 @@ def get_latex_fontdoc(text, fontsize='11pt'):
 \typeout{{LABELWIDTH: \the\lblwidth}}%
 \typeout{{LABELHEIGHT: \the\lblheight}}%
 \end{{document}}
-""".format(fontsize=fontsize, text=uni2tex(text))
+""".format(fontsize=fontsize, text=uni2tex(text), preamble=uni2tex(preamble))
     return tex
 
 def compile_latex(fname, tmpdirname, silent=True):
@@ -103,7 +104,7 @@ def build_latex_doc(tex, output_name=None, silent=True):
         if output_name:
             shutil.copy2(pdfname, output_name)
 
-def text_dimensions(text, fontsize='11pt', silent=True):
-    tex = get_latex_fontdoc(text, fontsize=fontsize)
+def text_dimensions(text, fontsize='11pt', preamble='', silent=True):
+    tex = get_latex_fontdoc(text, fontsize=fontsize, preamble=preamble)
     width, height = get_latex_dims(tex, silent=silent)
     return width, height
