@@ -205,31 +205,23 @@ class Timeline(object):
         renderer.layout(newnodes)
         return newnodes, renderer
 
+    def colorFunc(self, colorName, thedict, i=0):
+        if isinstance(self.options[colorName], list):
+            return self.options[colorName][i%len(self.options[colorName])]
+        theColor = d3_functor(self.options[colorName])
+        return theColor(thedict)
+
     def dotColor(self, thedict, i=0):
-        if isinstance(self.options['dotColor'], list):
-            return self.options['dotColor'][i%len(self.options['dotColor'])]
-        dotColor = d3_functor(self.options['dotColor'])
-        return dotColor(thedict)
+        return self.colorFunc('dotColor', thedict, i=i)
 
     def linkColor(self, thedict, i=0):
-        if isinstance(self.options['linkColor'], list):
-            return self.options['linkColor'][i%len(self.options['linkColor'])]
-        linkColor = d3_functor(self.options['linkColor'])
-        return linkColor(thedict)
+        return self.colorFunc('linkColor', thedict, i=i)
 
     def labelBgColor(self, thedict, i=0):
-        if isinstance(self.options['labelBgColor'], list):
-            return self.options['labelBgColor'][i %
-                    len(self.options['labelBgColor'])]
-        labelBgColor = d3_functor(self.options['labelBgColor'])
-        return labelBgColor(thedict)
+        return self.colorFunc('labelBgColor', thedict, i=i)
 
     def labelTextColor(self, thedict, i=0):
-        if isinstance(self.options['labelTextColor'], list):
-            return self.options['labelTextColor'][i %
-                    len(self.options['labelTextColor'])]
-        labelTextColor = d3_functor(self.options['labelTextColor'])
-        return labelTextColor(thedict)
+        return self.colorFunc('labelTextColor', thedict, i=i)
 
     def textFn(self, thedict):
         if self.options['textFn'] is None:
