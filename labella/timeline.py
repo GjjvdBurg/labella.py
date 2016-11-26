@@ -276,8 +276,10 @@ class TimelineSVG(Timeline):
         self.add_links(mainLayer)
         self.add_labels(mainLayer)
         self.add_dots(mainLayer)
+        svglines = ElementTree.tostring(doc)
         with open(filename, 'wb') as fid:
-            fid.write(ElementTree.tostring(doc))
+            fid.write(svglines)
+        return svglines
 
     def getTranslation(self):
         x = self.options['margin']['left']
@@ -433,13 +435,15 @@ class TimelineTex(Timeline):
         self.close_scope(doc) # margin
         self.add_footer(doc)
 
+        texlines = '\n'.join(doc)
         with open(filename, 'w') as fid:
-            fid.write('\n'.join(doc))
+            fid.write(texlines)
         if build_pdf:
             fullname = os.path.realpath(filename)
             root = os.path.splitext(fullname)[0]
             output_name = root + ".pdf"
-            build_latex_doc('\n'.join(doc), output_name=output_name)
+            build_latex_doc(texlines, output_name=output_name)
+        return texlines
 
     def add_header(self, doc):
         border = ("%fbp %fbp %fbp %fbp" % (self.options['margin']['left'], 
