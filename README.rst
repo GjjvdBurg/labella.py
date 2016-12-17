@@ -47,9 +47,9 @@ Usage
 =====
 Using labella.py is extremely similar to using 
 `labella.js <https://github.com/twitter/labella.js>`_. See the 
-`examples <./examples>`_ directory for examples of how to use labella.py. These 
-examples are translations of the examples included in labella.js and in 
-`d3kit-timeline <https://kristw.github.io/d3kit-timeline/>`_.
+`examples <https://github.com/GjjvdBurg/labella.py/tree/master/examples>`_ directory 
+for examples of how to use labella.py. These examples are translations of the examples 
+included in labella.js and in `d3kit-timeline <https://kristw.github.io/d3kit-timeline/>`_.
 
 For ease of use only the Timeline interface is implemented, which works 
 similar to `d3kit-timeline <https://kristw.github.io/d3kit-timeline/>`_. Here is 
@@ -64,7 +64,7 @@ a minimal working example for exporting to PDF::
       ], options={'scale': LinearScale()})
     >>> tl.export('minimal.tex')
 
-See also the documentation `here <./docs>`_.
+See also the documentation `here <https://github.com/GjjvdBurg/labella.py/tree/master/docs>`_.
 
 Installation
 ============
@@ -76,8 +76,8 @@ Labella.py is available through PyPi, so you can do::
 to install it.
 
 **Note:** Labella.py requires a working LaTeX distribution for both SVG and 
-PDF output (see also `the documentation <./docs>`_), and has only been tested on 
-Linux. If you run into problems, please open an issue on GitHub.
+PDF output (see also `the documentation <./https://github.com/GjjvdBurg/labella.py/tree/master/docs>`_), 
+and has only been tested on Linux. If you run into problems, please open an issue on GitHub.
 
 Author
 ======

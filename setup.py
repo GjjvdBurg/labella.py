@@ -8,7 +8,7 @@ def read(fname):
 
 setup(
         name='labella',
-        version='0.9.1',
+        version='0.9.2',
         description='Python version of Labella.js',
         long_description=read('README.rst'),
         author='Gertjan van den Burg',
