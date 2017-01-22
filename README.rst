@@ -76,7 +76,7 @@ Labella.py is available through PyPi, so you can do::
 to install it.
 
 **Note:** Labella.py requires a working LaTeX distribution for both SVG and 
-PDF output (see also `the documentation <./https://github.com/GjjvdBurg/labella.py/tree/master/docs>`_), 
+PDF output (see also `the documentation <https://github.com/GjjvdBurg/labella.py/tree/master/docs>`_), 
 and has only been tested on Linux. If you run into problems, please open an issue on GitHub.
 
 Author
