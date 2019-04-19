@@ -82,7 +82,7 @@ and has only been tested on Linux. If you run into problems, please open an issu
 Author
 ======
 
-Gertjan van den Burg (`@GJJvandenBurg <https://twitter.com/GJJvandenBurg>`_).
+Gertjan van den Burg (`@GjjvdBurg <https://twitter.com/GjjvdBurg>`_).
 
 Licensed under the `Apache License Version 2.0 <http://www.apache.org/licenses/LICENSE-2.0>`_.
 
