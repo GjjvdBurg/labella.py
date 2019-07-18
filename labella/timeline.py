@@ -55,7 +55,8 @@ DEFAULT_OPTIONS = {
             'tickThickness': 'thick',
             'linkThickness': 'very thick',
             'tickCross': False,
-            'preamble': ''
+            'preamble': '',
+            'latexmkOptions': []
             }
         }
 
@@ -66,7 +67,8 @@ def d3_functor(v):
 
 class Item(object):
     def __init__(self, time, width=DEFAULT_WIDTH, text=None, data=None,
-            output_mode='svg', tex_fontsize='11pt', tex_preamble=None):
+            output_mode='svg', tex_fontsize='11pt', 
+            tex_preamble=None, latexmk_options=None):
         self.time = time
         self.text = text
         self.width = width
@@ -74,6 +76,7 @@ class Item(object):
         self.output_mode = output_mode
         self.tex_fontsize = tex_fontsize
         self.tex_preamble = tex_preamble
+        self.latexmk_options = latexmk_options
         if self.width is None and self.text:
             self.width, self.height = self.get_text_dimensions()
         else:
@@ -86,7 +89,8 @@ class Item(object):
             height = 14.0
         else:
             width, height = text_dimensions(self.text,
-                    fontsize=self.tex_fontsize, preamble=self.tex_preamble)
+                    fontsize=self.tex_fontsize, preamble=self.tex_preamble,
+                    latexmk_options=self.latexmk_options)
             width = math.ceil(width) + 4
             height += 4
         return width, height
@@ -148,8 +152,9 @@ class Timeline(object):
                 width = d.get('width', DEFAULT_WIDTH)
             it = Item(time, width=width, text=text, data=d,
                     output_mode=output_mode,
-                    tex_fontsize=self.options['latex']['fontsize'], 
-                    tex_preamble=self.options['latex']['preamble'])
+                    tex_fontsize=self.options['latex']['fontsize'],
+                    tex_preamble=self.options['latex']['preamble'],
+                    latexmk_options=self.options['latex']['latexmkOptions'])
             items.append(it)
         return items
 
@@ -442,7 +447,8 @@ class TimelineTex(Timeline):
             fullname = os.path.realpath(filename)
             root = os.path.splitext(fullname)[0]
             output_name = root + ".pdf"
-            build_latex_doc(texlines, output_name=output_name)
+            build_latex_doc(texlines, self.options['latex']['latexmkOptions'],
+                output_name=output_name)
         return texlines
 
     def add_header(self, doc):

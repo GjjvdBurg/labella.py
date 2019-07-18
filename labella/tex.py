@@ -53,10 +53,14 @@ def get_latex_fontdoc(text, fontsize='11pt', preamble=''):
 """.format(fontsize=fontsize, text=uni2tex(text), preamble=uni2tex(preamble))
     return tex
 
-def compile_latex(fname, tmpdirname, silent=True):
+def compile_latex(fname, tmpdirname, latexmk_options, silent=True):
     compiler = 'latexmk'
-    compiler_args = ['--pdf', '--outdir=' + tmpdirname,
-            '--interaction=nonstopmode', fname]
+    if latexmk_options:
+        compiler_args = latexmk_options +  ['--outdir=' + tmpdirname,
+                '--interaction=nonstopmode', fname]
+    else:
+        compiler_args = ['--pdf','--outdir=' + tmpdirname,
+                '--interaction=nonstopmode', fname]
     command = [compiler] + compiler_args
     try:
         output = subprocess.check_output(command, stderr=subprocess.STDOUT)
@@ -69,14 +73,14 @@ def compile_latex(fname, tmpdirname, silent=True):
         if not silent:
             print(output.decode())
 
-def get_latex_dims(tex, silent=True):
+def get_latex_dims(tex, latexmk_options, silent=True):
     with tempfile.TemporaryDirectory() as tmpdirname:
         basename = 'labella_text'
         fname = os.path.join(tmpdirname, basename + '.tex')
         with open(fname, 'w') as fid:
             fid.write(tex)
 
-        compile_latex(fname, tmpdirname, silent=silent)
+        compile_latex(fname, tmpdirname, latexmk_options, silent=silent)
 
         logname = os.path.join(tmpdirname, basename + '.log')
         with open(logname, 'r') as fid:
@@ -91,20 +95,22 @@ def get_latex_dims(tex, silent=True):
         height = line_height.strip().split(':')[-1].strip().rstrip('pt')
     return float(width), float(height)
 
-def build_latex_doc(tex, output_name=None, silent=True):
+def build_latex_doc(tex, latexmk_options, output_name=None, silent=True):
     with tempfile.TemporaryDirectory() as tmpdirname:
         basename = 'labella_text'
         fname = os.path.join(tmpdirname, basename + '.tex')
         with open(fname, 'w') as fid:
             fid.write(tex)
 
-        compile_latex(fname, tmpdirname, silent=silent)
+        compile_latex(fname, tmpdirname, latexmk_options, silent=silent)
 
         pdfname = os.path.join(tmpdirname, basename + '.pdf')
         if output_name:
             shutil.copy2(pdfname, output_name)
 
-def text_dimensions(text, fontsize='11pt', preamble='', silent=True):
+def text_dimensions(text, fontsize='11pt', preamble='', silent=True,
+                    latexmk_options=None):
     tex = get_latex_fontdoc(text, fontsize=fontsize, preamble=preamble)
-    width, height = get_latex_dims(tex, silent=silent)
+    width, height = get_latex_dims(tex, silent=silent, 
+                     latexmk_options=latexmk_options)
     return width, height
