@@ -6,17 +6,19 @@ labella.py
     :target: https://travis-ci.org/GjjvdBurg/labella.py
 
 
-Labella.py is a Python 3 clone of `labella.js <https://github.com/twitter/labella.js>`_ 
-which supports all the features of labella.js and addionally can generate TikZ PDF
+Labella.py is a Python 3 clone of `labella.js 
+<https://github.com/twitter/labella.js>`_ that supports all the features of 
+labella.js and addionally can generate TikZ PDF
 images for use in LaTeX.
 
 **Note:** This package is for the most part a direct translation of the 
 original `labella.js <https://github.com/twitter/labella.js>`_ code to Python 
 3. All the credit for the labella code goes to Krist Wongsuphasawat (`@kristw 
-<https://twitter.com/kristw>`_), I only added the code which generates PDF 
-output. Labella.py also includes code from `d3 <https://github.com/mbostock/d3>`_ 
-for axis scaling, and `WebCola <https://github.com/tgdwyer/WebCola>`_ for the 
-VPSC code (label placement optimization).
+   <https://twitter.com/kristw>`_), I only added the code that generates PDF 
+   output. Labella.py also includes code from `d3 
+   <https://github.com/mbostock/d3>`_ for axis scaling, and `WebCola 
+   <https://github.com/tgdwyer/WebCola>`_ for the VPSC code (label placement 
+   optimization).
 
 Why?
 ====
