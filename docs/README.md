@@ -34,6 +34,7 @@ Options for LaTeX are:
 | linkThickness | 'very thick' | thickness of the link linkes in TikZ language |
 | tickCross | False | boolean for ticks to cross the axis or stay on one side |
 | preamble | '' | raw (!) string for the preamble of generated LaTeX documents |
+| latexmkOptions | [] | list of additional [arguments](https://man.cx/latexmk#heading4) to pass to latexmk |
 
 Input Specification
 -------------------
