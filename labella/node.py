@@ -1,3 +1,12 @@
+# -*- coding: utf-8 -*-
+
+"""
+This file is part of labella.py.
+
+Author: G.J.J. van den Burg
+License: Apache-2.0
+"""
+
 
 class Node(object):
     def __init__(self, idealPos, width, data=None):
@@ -20,20 +29,31 @@ class Node(object):
         self.h = 0
 
     def __repr__(self):
-        s = ('Node(idealPos=%r, currentPos=%r, width=%r, '
-                'layerIndex=%r, data=%r)' % (self.idealPos, self.currentPos, 
-                    self.width, self.layerIndex, self.data))
+        s = (
+            "Node(idealPos=%r, currentPos=%r, width=%r, "
+            "layerIndex=%r, data=%r)"
+            % (
+                self.idealPos,
+                self.currentPos,
+                self.width,
+                self.layerIndex,
+                self.data,
+            )
+        )
         return s
+
     def __str__(self):
         return repr(self)
 
     def distanceFrom(self, node):
-        halfWidth = self.width/2
-        nodeHalfWidth = node.width/2
-        maxval = max(self.currentPos - halfWidth, node.currentPos - 
-                nodeHalfWidth)
-        minval = min(self.currentPos + halfWidth, node.currentPos + 
-                nodeHalfWidth)
+        halfWidth = self.width / 2
+        nodeHalfWidth = node.width / 2
+        maxval = max(
+            self.currentPos - halfWidth, node.currentPos - nodeHalfWidth
+        )
+        minval = min(
+            self.currentPos + halfWidth, node.currentPos + nodeHalfWidth
+        )
         return maxval - minval
 
     def moveToIdealPosition(self):
@@ -47,29 +67,30 @@ class Node(object):
         return self.distanceFrom(node) - _buffer < 0
 
     def overlapWithPoint(self, pos):
-        halfWidth = self.width/2
-        return ((pos >= self.currentPos - halfWidth) and (pos <=
-            self.currentPos + halfWidth))
+        halfWidth = self.width / 2
+        return (pos >= self.currentPos - halfWidth) and (
+            pos <= self.currentPos + halfWidth
+        )
 
     def positionBefore(self, node, buf=None):
         _buffer = buf if buf else 0
-        return node.currentLeft() - self.width/2 - _buffer
+        return node.currentLeft() - self.width / 2 - _buffer
 
     def positionAfter(self, node, buf=None):
         _buffer = buf if buf else 0
-        return node.currentRight() + self.width/2 + _buffer
+        return node.currentRight() + self.width / 2 + _buffer
 
     def currentRight(self):
-        return self.currentPos + self.width/2
+        return self.currentPos + self.width / 2
 
     def currentLeft(self):
-        return self.currentPos - self.width/2
+        return self.currentPos - self.width / 2
 
     def idealRight(self):
-        return self.idealPos + self.width/2
+        return self.idealPos + self.width / 2
 
     def idealLeft(self):
-        return self.idealPos - self.width/2
+        return self.idealPos - self.width / 2
 
     def removeStub(self):
         if self.parent:
@@ -85,7 +106,7 @@ class Node(object):
         return stub
 
     def isStub(self):
-        return not(not(self.child))
+        return not (not (self.child))
 
     def getPathToRoot(self):
         path = []
@@ -102,8 +123,11 @@ class Node(object):
         length = 0
         current = self
         while current:
-            targetPos = (current.parent.currentPos if current.parent else 
-                    current.idealPos)
+            targetPos = (
+                current.parent.currentPos
+                if current.parent
+                else current.idealPos
+            )
             length += abs(current.currentPos - targetPos)
             current = current.parent
         return length
@@ -124,4 +148,3 @@ class Node(object):
         node.currentPos = self.currentPos
         node.layerIndex = self.layerIndex
         return node
-

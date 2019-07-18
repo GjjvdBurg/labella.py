@@ -1,12 +1,19 @@
+# -*- coding: utf-8 -*-
+
 """
+This file is part of labella.py.
+
 Python rewrite of the VPSC code included in Labella.js.
 
 Originally modified from:
     https://github.com/tgdwyer/WebCola/blob/master/WebCola/src/vpsc.ts
 
+Author: G.J.J. van den Burg
+License: Apache-2.0
 """
 
 from sys import maxsize
+
 
 class PositionStats(object):
     def __init__(self, scale):
@@ -26,9 +33,10 @@ class PositionStats(object):
     def getPosn(self):
         return (self.AD - self.AB) / self.A2
 
+
 class Constraint(object):
     def __init__(self, left, right, gap, equality=None):
-        if (equality is None):
+        if equality is None:
             equality = False
         self.left = left
         self.right = right
@@ -40,15 +48,24 @@ class Constraint(object):
     def slack(self):
         if self.unsatisfiable:
             return maxsize
-        return (self.right.scale * self.right.position() - self.gap -
-                self.left.scale * self.left.position())
+        return (
+            self.right.scale * self.right.position()
+            - self.gap
+            - self.left.scale * self.left.position()
+        )
 
     def __repr__(self):
-        s = ("Constraint(left=%r, right=%r, gap=%r, equality=%r)" % 
-                (self.left, self.right, self.gap, self.equality))
+        s = "Constraint(left=%r, right=%r, gap=%r, equality=%r)" % (
+            self.left,
+            self.right,
+            self.gap,
+            self.equality,
+        )
         return s
+
     def __str__(self):
         return repr(self)
+
 
 class Variable(object):
     def __init__(self, desiredPosition, weight=None, scale=None):
@@ -66,23 +83,31 @@ class Variable(object):
         return 2.0 * self.weight * (self.position() - self.desiredPosition)
 
     def position(self):
-        return ((self.block.ps.scale * self.block.posn + self.offset) /
-                self.scale)
+        return (
+            self.block.ps.scale * self.block.posn + self.offset
+        ) / self.scale
 
     def visitNeighbours(self, prev, f):
         def ff(c, _next):
             return c.active and prev != _next and f(c, _next)
+
         for c in self.cOut:
             ff(c, c.right)
         for c in self.cIn:
             ff(c, c.left)
 
     def __repr__(self):
-        s = ("Variable(desiredPos=%r, weight=%r, scale=%r, offset=%r)" % 
-                (self.desiredPosition, self.weight, self.scale, self.offset))
+        s = "Variable(desiredPos=%r, weight=%r, scale=%r, offset=%r)" % (
+            self.desiredPosition,
+            self.weight,
+            self.scale,
+            self.offset,
+        )
         return s
+
     def __str__(self):
         return repr(self)
+
 
 class Block(object):
     def __init__(self, v):
@@ -108,6 +133,7 @@ class Block(object):
     def compute_lm(self, v, u, postAction):
         dfdv = v.dfdv()
         _self = self
+
         def f(c, _next):
             nonlocal dfdv
             _dfdv = _self.compute_lm(_next, v, postAction)
@@ -118,11 +144,13 @@ class Block(object):
                 dfdv += _dfdv * c.right.scale
                 c.lm = -_dfdv
             postAction(c)
+
         v.visitNeighbours(u, f)
         return dfdv / v.scale
 
     def populateSplitBlock(self, v, prev):
         _self = self
+
         def f(c, _next):
             _next.offset = v.offset
             if _next == c.right:
@@ -131,6 +159,7 @@ class Block(object):
                 _next.offset -= c.gap
             _self.addVariable(_next)
             _self.populateSplitBlock(_next, v)
+
         v.visitNeighbours(prev, f)
 
     def traverse(self, visit, acc, v, prev):
@@ -139,49 +168,62 @@ class Block(object):
             v = self.vars[0]
         if not prev:
             prev = None
+
         def f(c, _next):
             acc.push(visit(c))
             _self.traverse(visit, acc, _next, v)
+
         v.visitNeighbours(prev, f)
 
     def findMinLM(self):
         m = None
+
         def f(c):
             nonlocal m
             if not c.equality and (m is None or c.lm < m.lm):
                 m = c
+
         self.compute_lm(self.vars[0], None, f)
         return m
 
     def findMinLMBetween(self, lv, rv):
         def f(x):
             pass
+
         self.compute_lm(lv, None, f)
         m = None
+
         def f(c, _next):
             nonlocal m
-            if (not c.equality and c.right == _next and (m is None or c.lm <
-                m.lm)):
+            if (
+                not c.equality
+                and c.right == _next
+                and (m is None or c.lm < m.lm)
+            ):
                 m = c
+
         self.findPath(lv, None, rv, f)
         return m
 
     def findPath(self, v, prev, to, visit):
         _self = self
         endFound = False
+
         def f(c, _next):
             nonlocal endFound
-            if (not endFound and (_next == to or _self.findPath(_next, v, to,
-                visit))):
+            if not endFound and (
+                _next == to or _self.findPath(_next, v, to, visit)
+            ):
                 endFound = True
                 visit(c, _next)
+
         v.visitNeighbours(prev, f)
         return endFound
 
     def isActiveDirectedPathBetween(self, u, v):
         if u == v:
             return True
-        for i in range(len(u.cOut)-1, -1, -1):
+        for i in range(len(u.cOut) - 1, -1, -1):
             c = u.cOut[i]
             if c.active and self.isActiveDirectedPathBetween(c.right, v):
                 return True
@@ -190,8 +232,10 @@ class Block(object):
     @classmethod
     def split(cls, c):
         c.active = False
-        return [Block.createSplitBlock(c.left),
-                Block.createSplitBlock(c.right)]
+        return [
+            Block.createSplitBlock(c.left),
+            Block.createSplitBlock(c.right),
+        ]
 
     @classmethod
     def createSplitBlock(cls, startVar):
@@ -203,7 +247,7 @@ class Block(object):
         c = self.findMinLMBetween(vl, vr)
         if not c is None:
             bs = Block.split(c)
-            return {'constraint': c, 'lb': bs[0], 'rb': bs[1] }
+            return {"constraint": c, "lb": bs[0], "rb": bs[1]}
         return None
 
     def mergeAcross(self, b, c, dist):
@@ -216,7 +260,7 @@ class Block(object):
 
     def cost(self):
         _sum = 0
-        for i in range(len(self.vars)-1, -1, -1):
+        for i in range(len(self.vars) - 1, -1, -1):
             v = self.vars[i]
             d = v.position() - v.desiredPosition
             _sum += d * d * v.weight
@@ -227,15 +271,15 @@ class Blocks(object):
     def __init__(self, vs):
         self.vs = vs
         n = len(vs)
-        self._list = [None]*n
-        for i in range(len(vs)-1, -1, -1):
+        self._list = [None] * n
+        for i in range(len(vs) - 1, -1, -1):
             b = Block(vs[i])
             self._list[i] = b
             b.blockInd = i
 
     def cost(self):
         _sum = 0
-        for i in range(len(self._list)-1, -1, -1):
+        for i in range(len(self._list) - 1, -1, -1):
             _sum += self._list[i].cost()
         return _sum
 
@@ -273,13 +317,14 @@ class Blocks(object):
         self.updateBlockPositions()
         for b in self._list:
             v = b.findMinLM()
-            if (not v is None and v.lm < Solver.LAGRANGIAN_TOLERANCE):
+            if not v is None and v.lm < Solver.LAGRANGIAN_TOLERANCE:
                 b = v.left.block
                 newblocks = Block.split(v)
                 for nb in newblocks:
                     self.insert(nb)
                 self.remove(b)
                 inactive.append(v)
+
 
 class Solver(object):
 
@@ -332,8 +377,9 @@ class Solver(object):
                 deletePoint = i
                 if c.equality:
                     break
-        if deletePoint != n and (minSlack < Solver.ZERO_UPPERBOUND and not
-                v.active or v.equality):
+        if deletePoint != n and (
+            minSlack < Solver.ZERO_UPPERBOUND and not v.active or v.equality
+        ):
             l[deletePoint] = l[n - 1]
             l = l[:-1]
         return v
@@ -343,8 +389,9 @@ class Solver(object):
             self.bs = Blocks(self.vs)
         self.bs.split(self.inactive)
         v = self.mostViolated()
-        while (v) and (v.equality or v.slack() < Solver.ZERO_UPPERBOUND and 
-                not v.active):
+        while (v) and (
+            v.equality or v.slack() < Solver.ZERO_UPPERBOUND and not v.active
+        ):
             lb = v.left.block
             rb = v.right.block
             if lb != rb:
@@ -357,10 +404,10 @@ class Solver(object):
                     continue
                 split = lb.splitBetween(v.left, v.right)
                 if not split is None:
-                    self.bs.insert(split['lb'])
-                    self.bs.insert(split['rb'])
+                    self.bs.insert(split["lb"])
+                    self.bs.insert(split["rb"])
                     self.bs.remove(lb)
-                    self.inactive.append(split['constraint'])
+                    self.inactive.append(split["constraint"])
                 else:
                     v.unsatisfiable = True
                     v = self.mostViolated()

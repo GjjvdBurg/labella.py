@@ -1,3 +1,12 @@
+# -*- coding: utf-8 -*-
+
+"""
+This file is part of labella.py.
+
+Author: G.J.J. van den Burg
+License: Apache-2.0
+"""
+
 
 def toLayers(nodes):
     if not nodes:
@@ -6,11 +15,14 @@ def toLayers(nodes):
         return nodes
     return [nodes]
 
+
 def denominator(layers):
     return sum((len(l) for l in layers))
 
+
 def denominatorWithoutStubs(layers):
     return sum((len([x for x in l if not x.isStub()]) for l in layers))
+
 
 def displacement(nodes):
     if not nodes:
@@ -22,6 +34,7 @@ def displacement(nodes):
             thesum += 0 if node.isStub() else abs(node.displacement())
     return thesum / denominatorWithoutStubs(layers)
 
+
 def pathLength(nodes):
     if len(nodes) == 0:
         return 0
@@ -31,6 +44,7 @@ def pathLength(nodes):
         for node in layer:
             thesum += 0 if node.isStub() else abs(node.getPathToRootLength())
     return thesum / denominatorWithoutStubs(layers)
+
 
 def overflowSpace(nodes, minPos=None, maxPos=None):
     if (not nodes) or ((minPos is None) and (maxPos is None)):
@@ -55,6 +69,7 @@ def overflowSpace(nodes, minPos=None, maxPos=None):
                     total += r - maxPos
     return total
 
+
 def overDensitySpace(nodes, density=None, layerWidth=None, nodeSpacing=0):
     if (not nodes) or (density is None) or (layerWidth is None):
         return 0
@@ -70,6 +85,7 @@ def overDensitySpace(nodes, density=None, layerWidth=None, nodeSpacing=0):
         total += 0 if width <= limit else width - limit
     return total
 
+
 def overlapCount(nodes, buf=0):
     if not nodes:
         return 0
@@ -78,11 +94,12 @@ def overlapCount(nodes, buf=0):
     for layer in layers:
         count = 0
         for i in range(len(layer)):
-            for j in range(i+1, len(layer)):
+            for j in range(i + 1, len(layer)):
                 if layer[i].overlapWithNode(layer[j], buf):
                     count += 1
         total += count
     return total
+
 
 def overlapSpace(nodes):
     if not nodes:
@@ -92,11 +109,12 @@ def overlapSpace(nodes):
     for layer in layers:
         count = 0
         for i in range(len(layer)):
-            for j in range(i+1, len(layer)):
+            for j in range(i + 1, len(layer)):
                 distance = layer[i].distanceFrom(layer[j])
                 count += abs(distance) if distance < 0 else 0
         total += count
     return total / denominator(layers)
+
 
 def weightedAllocation(nodes):
     if not nodes:
@@ -108,6 +126,7 @@ def weightedAllocation(nodes):
         total += layerIndex * len([x for x in layer if not x.isStub()])
     return total
 
+
 def weightedAllocatedSpace(nodes):
     if not nodes:
         return 0
@@ -116,4 +135,3 @@ def weightedAllocatedSpace(nodes):
     for layerIndex, layer in enumerate(layers):
         total += layerIndex * sum([d.width for d in layer])
     return total
-
