@@ -27,7 +27,7 @@ from labella.node import Node
 from labella.renderer import Renderer
 from labella.scale import TimeScale, d3_extent
 from labella.tex import text_dimensions, build_latex_doc, uni2tex
-from labella.utils import int2name, hex2rgbf, hex2rgbstr
+from labella.utils import int2name, hex2rgbstr
 
 DEFAULT_WIDTH = 50
 
@@ -61,6 +61,7 @@ DEFAULT_OPTIONS = {
         "linkThickness": "very thick",
         "tickCross": False,
         "preamble": "",
+        "latexmkOptions": [],
     },
 }
 
@@ -81,6 +82,7 @@ class Item(object):
         output_mode="svg",
         tex_fontsize="11pt",
         tex_preamble=None,
+        latexmk_options=None,
     ):
         self.time = time
         self.text = text
@@ -89,6 +91,7 @@ class Item(object):
         self.output_mode = output_mode
         self.tex_fontsize = tex_fontsize
         self.tex_preamble = tex_preamble
+        self.latexmk_options = latexmk_options
         if self.width is None and self.text:
             self.width, self.height = self.get_text_dimensions()
         else:
@@ -104,6 +107,7 @@ class Item(object):
                 self.text,
                 fontsize=self.tex_fontsize,
                 preamble=self.tex_preamble,
+                latexmk_options=self.latexmk_options,
             )
             width = math.ceil(width) + 4
             height += 4
@@ -179,6 +183,7 @@ class Timeline(object):
                 output_mode=output_mode,
                 tex_fontsize=self.options["latex"]["fontsize"],
                 tex_preamble=self.options["latex"]["preamble"],
+                latexmk_options=self.options["latex"]["latexmkOptions"],
             )
             items.append(it)
         return items
@@ -525,7 +530,11 @@ class TimelineTex(Timeline):
             fullname = os.path.realpath(filename)
             root = os.path.splitext(fullname)[0]
             output_name = root + ".pdf"
-            build_latex_doc(texlines, output_name=output_name)
+            build_latex_doc(
+                texlines,
+                self.options["latex"]["latexmkOptions"],
+                output_name=output_name,
+            )
         return texlines
 
     def add_header(self, doc):
@@ -555,41 +564,40 @@ class TimelineTex(Timeline):
 
     def add_header_colors(self, doc):
         # Define colors
+        tex_hex = lambda code: code[1:] if code[0:1] == "#" else code[0:]
         for i, node in enumerate(self.nodes):
-            rgb = hex2rgbf(self.dotColor(node.data.data, i))
             doc.append(
-                "\\definecolor{dotColor%s}{rgb}{%f,%f,%f}"
-                % (int2name(i), rgb[0], rgb[1], rgb[2])
+                "\\definecolor{dotColor%s}{HTML}{%s}"
+                % (int2name(i), tex_hex(self.dotColor(node.data.data, i)))
             )
         doc.append("")
         for i, node in enumerate(self.nodes):
-            rgb = hex2rgbf(self.labelBgColor(node.data.data, i))
             doc.append(
-                "\\definecolor{labelBgColor%s}{rgb}{%f,%f,%f}"
-                % (int2name(i), rgb[0], rgb[1], rgb[2])
+                "\\definecolor{labelBgColor%s}{HTML}{%s}"
+                % (int2name(i), tex_hex(self.labelBgColor(node.data.data, i)))
             )
         doc.append("")
         for i, node in enumerate(self.nodes):
-            rgb = hex2rgbf(self.labelTextColor(node.data.data, i))
             doc.append(
-                "\\definecolor{labelTextColor%s}{rgb}{%f,%f,%f}"
-                % (int2name(i), rgb[0], rgb[1], rgb[2])
+                "\\definecolor{labelTextColor%s}{HTML}{%s}"
+                % (
+                    int2name(i),
+                    tex_hex(self.labelTextColor(node.data.data, i)),
+                )
             )
         doc.append("")
         for i, node in enumerate(self.nodes):
-            rgb = hex2rgbf(self.linkColor(node.data.data, i))
             doc.append(
-                "\\definecolor{linkColor%s}{rgb}{%f,%f,%f}"
-                % (int2name(i), rgb[0], rgb[1], rgb[2])
+                "\\definecolor{linkColor%s}{HTML}{%s}"
+                % (int2name(i), tex_hex(self.linkColor(node.data.data, i)))
             )
         doc.append("")
         for i, node in enumerate(self.nodes):
             if not self.options["showBorder"]:
                 return
-            rgb = hex2rgbf(self.borderColor(node.data.data, i))
             doc.append(
-                "\\definecolor{borderColor%s}{rgb}{%f,%f,%f}"
-                % (int2name(i), rgb[0], rgb[1], rgb[2])
+                "\\definecolor{borderColor%s}{HTML}{%s}"
+                % (int2name(i), tex_hex(self.borderColor(node.data.data, i)))
             )
         doc.append("")
 
