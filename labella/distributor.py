@@ -143,6 +143,6 @@ class Distributor(object):
             iTree.addi(node.idealLeft(), node.idealRight(), data=node)
 
         for node in nodes:
-            overlaps = iTree.search(node.idealLeft(), node.idealRight())
+            overlaps = iTree.overlap(node.idealLeft(), node.idealRight())
             node.overlaps = [x.data for x in overlaps]
             node.overlapCount = len(overlaps)
