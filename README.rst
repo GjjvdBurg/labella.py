@@ -2,6 +2,9 @@
 labella.py
 ==========
 
+.. image:: https://travis-ci.org/GjjvdBurg/labella.py.svg?branch=master
+    :target: https://travis-ci.org/GjjvdBurg/labella.py
+
 Labella.py is a Python 3 clone of `labella.js <https://github.com/twitter/labella.js>`_ 
 which supports all the features of labella.js and addionally can generate TikZ PDF
 images for use in LaTeX.
