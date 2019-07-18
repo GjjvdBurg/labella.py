@@ -472,32 +472,28 @@ class TimelineTex(Timeline):
 
     def add_header_colors(self, doc):
         # Define colors
+        tex_hex = lambda code: code[1:] if code[0:1] == '#' else code[0:]
         for i, node in enumerate(self.nodes):
-            rgb = hex2rgbf(self.dotColor(node.data.data, i))
-            doc.append("\\definecolor{dotColor%s}{rgb}{%f,%f,%f}" %
-                    (int2name(i), rgb[0], rgb[1], rgb[2]))
+            doc.append("\\definecolor{dotColor%s}{HTML}{%s}" %
+               (int2name(i), tex_hex(self.dotColor(node.data.data, i))))          
         doc.append("")
         for i, node in enumerate(self.nodes):
-            rgb = hex2rgbf(self.labelBgColor(node.data.data, i))
-            doc.append("\\definecolor{labelBgColor%s}{rgb}{%f,%f,%f}" %
-                    (int2name(i), rgb[0], rgb[1], rgb[2]))
+            doc.append("\\definecolor{labelBgColor%s}{HTML}{%s}" %
+               (int2name(i), tex_hex(self.labelBgColor(node.data.data, i)))) 
         doc.append("")
         for i, node in enumerate(self.nodes):
-            rgb = hex2rgbf(self.labelTextColor(node.data.data, i))
-            doc.append("\\definecolor{labelTextColor%s}{rgb}{%f,%f,%f}" %
-                    (int2name(i), rgb[0], rgb[1], rgb[2]))
+            doc.append("\\definecolor{labelTextColor%s}{HTML}{%s}" %
+               (int2name(i), tex_hex(self.labelTextColor(node.data.data, i))))
         doc.append("")
         for i, node in enumerate(self.nodes):
-            rgb = hex2rgbf(self.linkColor(node.data.data, i))
-            doc.append("\\definecolor{linkColor%s}{rgb}{%f,%f,%f}" %
-                    (int2name(i), rgb[0], rgb[1], rgb[2]))
+            doc.append("\\definecolor{linkColor%s}{HTML}{%s}" %
+               (int2name(i), ltex_hex(self.linkColor(node.data.data, i))))
         doc.append("")
         for i, node in enumerate(self.nodes):
             if not self.options['showBorder']:
                 return
-            rgb = hex2rgbf(self.borderColor(node.data.data, i))
-            doc.append("\\definecolor{borderColor%s}{rgb}{%f,%f,%f}" % 
-                    (int2name(i), rgb[0], rgb[1], rgb[2]))
+            doc.append("\\definecolor{borderColor%s}{HTML}{%s}" %
+               (int2name(i), tex_hex(self.borderColor(node.data.data, i))))
         doc.append("")
 
     def add_header_labels(self, doc):
