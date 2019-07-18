@@ -471,31 +471,30 @@ class TimelineTex(Timeline):
             ""])
 
     def add_header_colors(self, doc):
-          # Define colors
-          tex_hex = lambda code: code[1:] if code[0:1] == '#' else code[0:]
-          for i, node in enumerate(self.nodes):
-              doc.append("\\definecolor{dotColor%s}{HTML}{%s}" %
-                       (int2name(i), tex_hex(self.dotColor(node.data.data, i))))          
-          doc.append("")
-          for i, node in enumerate(self.nodes):
-              doc.append("\\definecolor{labelBgColor%s}{HTML}{%s}" %
-                       (int2name(i), tex_hex(self.labelBgColor(node.data.data, i)))) 
-          doc.append("")
-          for i, node in enumerate(self.nodes):
-              doc.append("\\definecolor{labelTextColor%s}{HTML}{%s}" %
-                       (int2name(i), tex_hex(self.labelTextColor(node.data.data, i))))
-          doc.append("")
-          for i, node in enumerate(self.nodes):
-              doc.append("\\definecolor{linkColor%s}{HTML}{%s}" %
-                       (int2name(i), ltex_hex(self.linkColor(node.data.data, i))))
-          doc.append("")
-          for i, node in enumerate(self.nodes):
-              if not self.options['showBorder']:
-                  return
-              doc.append("\\definecolor{borderColor%s}{HTML}{%s}" %
-                       (int2name(i), tex_hex(self.borderColor(node.data.data, i))))
-          doc.append("")
-
+        # Define colors
+        tex_hex = lambda code: code[1:] if code[0:1] == '#' else code[0:]
+        for i, node in enumerate(self.nodes):
+            doc.append("\\definecolor{dotColor%s}{HTML}{%s}" %
+               (int2name(i), tex_hex(self.dotColor(node.data.data, i))))          
+        doc.append("")
+        for i, node in enumerate(self.nodes):
+            doc.append("\\definecolor{labelBgColor%s}{HTML}{%s}" %
+               (int2name(i), tex_hex(self.labelBgColor(node.data.data, i)))) 
+        doc.append("")
+        for i, node in enumerate(self.nodes):
+            doc.append("\\definecolor{labelTextColor%s}{HTML}{%s}" %
+               (int2name(i), tex_hex(self.labelTextColor(node.data.data, i))))
+        doc.append("")
+        for i, node in enumerate(self.nodes):
+            doc.append("\\definecolor{linkColor%s}{HTML}{%s}" %
+               (int2name(i), ltex_hex(self.linkColor(node.data.data, i))))
+        doc.append("")
+        for i, node in enumerate(self.nodes):
+            if not self.options['showBorder']:
+                return
+            doc.append("\\definecolor{borderColor%s}{HTML}{%s}" %
+               (int2name(i), tex_hex(self.borderColor(node.data.data, i))))
+        doc.append("")
 
     def add_header_labels(self, doc):
         # Define labels
