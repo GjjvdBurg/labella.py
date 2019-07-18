@@ -4,8 +4,9 @@
 # http://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 
 PACKAGE=labella
+EXAMPLE_DIR=examples
 
-.PHONY: help dist
+.PHONY: help dist examples
 
 .DEFAULT_GOAL := help
 
@@ -30,9 +31,13 @@ clean: ## Clean build dist and egg directories left after install
 	rm -f MANIFEST
 	find . -type f -iname '*.pyc' -delete
 	find . -type d -name '__pycache__' -empty -delete
+	$(MAKE) -C $(EXAMPLE_DIR) clean
 
 develop: ## Install a development version of the package needed for testing
 	python setup.py develop --user
 
 dist: ## Make Python source distribution
 	python setup.py sdist
+
+examples: install
+	$(MAKE) -C $(EXAMPLE_DIR) all
