@@ -1,0 +1,10 @@
+include setup.py
+include README.rst
+include LICENSE
+recursive-include labella *.py
+recursive-include tests *.py
+exclude poetry.lock
+exclude pyproject.toml
+exclude Makefile
+exclude .travis.yml
+exclude .gitignore
