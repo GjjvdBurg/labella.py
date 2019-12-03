@@ -37,7 +37,7 @@ develop: ## Install a development version of the package needed for testing
 	python setup.py develop --user
 
 dist: ## Make Python source distribution
-	python setup.py sdist
+	python setup.py sdist bdist_wheel
 
 examples: install
 	$(MAKE) -C $(EXAMPLE_DIR) all
