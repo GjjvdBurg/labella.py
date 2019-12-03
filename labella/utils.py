@@ -74,6 +74,14 @@ def hex2rgbstr(code):
     return "rgb(%s)" % rgbstr
 
 
+def hex2html(code):
+    if code[0] == '#':
+        code = code[1:]
+    if len(code) == 3:
+        code = ''.join([code[0], code[0], code[1], code[1], code[2], code[2]])
+    return code.upper()
+
+
 def int2name(i):
     """ Convert integer to Excel column name. """
     div = i + 1

@@ -27,7 +27,7 @@ from labella.node import Node
 from labella.renderer import Renderer
 from labella.scale import TimeScale, d3_extent
 from labella.tex import text_dimensions, build_latex_doc, uni2tex
-from labella.utils import int2name, hex2rgbstr
+from labella.utils import int2name, hex2rgbstr, hex2html
 
 DEFAULT_WIDTH = 50
 
@@ -564,17 +564,16 @@ class TimelineTex(Timeline):
 
     def add_header_colors(self, doc):
         # Define colors
-        tex_hex = lambda code: code[1:] if code[0:1] == "#" else code[0:]
         for i, node in enumerate(self.nodes):
             doc.append(
                 "\\definecolor{dotColor%s}{HTML}{%s}"
-                % (int2name(i), tex_hex(self.dotColor(node.data.data, i)))
+                % (int2name(i), hex2html(self.dotColor(node.data.data, i)))
             )
         doc.append("")
         for i, node in enumerate(self.nodes):
             doc.append(
                 "\\definecolor{labelBgColor%s}{HTML}{%s}"
-                % (int2name(i), tex_hex(self.labelBgColor(node.data.data, i)))
+                % (int2name(i), hex2html(self.labelBgColor(node.data.data, i)))
             )
         doc.append("")
         for i, node in enumerate(self.nodes):
@@ -582,14 +581,14 @@ class TimelineTex(Timeline):
                 "\\definecolor{labelTextColor%s}{HTML}{%s}"
                 % (
                     int2name(i),
-                    tex_hex(self.labelTextColor(node.data.data, i)),
+                    hex2html(self.labelTextColor(node.data.data, i)),
                 )
             )
         doc.append("")
         for i, node in enumerate(self.nodes):
             doc.append(
                 "\\definecolor{linkColor%s}{HTML}{%s}"
-                % (int2name(i), tex_hex(self.linkColor(node.data.data, i)))
+                % (int2name(i), hex2html(self.linkColor(node.data.data, i)))
             )
         doc.append("")
         for i, node in enumerate(self.nodes):
@@ -597,7 +596,7 @@ class TimelineTex(Timeline):
                 return
             doc.append(
                 "\\definecolor{borderColor%s}{HTML}{%s}"
-                % (int2name(i), tex_hex(self.borderColor(node.data.data, i)))
+                % (int2name(i), hex2html(self.borderColor(node.data.data, i)))
             )
         doc.append("")
 
