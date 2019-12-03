@@ -62,6 +62,7 @@ DEFAULT_OPTIONS = {
         "tickCross": False,
         "preamble": "",
         "latexmkOptions": [],
+        "reproducible": False
     },
 }
 
@@ -545,9 +546,16 @@ class TimelineTex(Timeline):
             self.options["margin"]["top"],
         )
         fontsize = self.options["latex"]["fontsize"]
+        repro = '\n'.join([
+            "\\pdfinfoomitdate=1",
+            "\\pdftrailerid{}",
+            "\\pdfsuppressptexinfo=1",
+            "\\pdfinfo{ /Creator () /Producer () }",
+        ])
         txt = [
             "\\documentclass[border={%s}, %s]{standalone}"
             % (border, fontsize),
+            repro if self.options["latex"]["reproducible"] else "%",
             self.options["latex"]["preamble"],
             "\\usepackage{tikz}",
             "\\usepackage{xcolor}",

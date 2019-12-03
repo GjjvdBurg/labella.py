@@ -35,6 +35,11 @@ Options for LaTeX are:
 | tickCross | False | boolean for ticks to cross the axis or stay on one side |
 | preamble | '' | raw (!) string for the preamble of generated LaTeX documents |
 | latexmkOptions | [] | list of additional [arguments](https://man.cx/latexmk#heading4) to pass to latexmk |
+| reproducible | False | whether to enable reproducible pdf builds |
+
+The ``reproducible`` option adds a few preamble commands that disable saving 
+the date, producer, etc. in the PDF file. These lines are added before the 
+``preamble`` options.
 
 Input Specification
 -------------------
