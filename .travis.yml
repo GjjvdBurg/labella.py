@@ -1,13 +1,9 @@
 language: python
 python:
-  - "3.5"
   - "3.6"
 
 install:
-  - pip install --upgrade pip
-  - pip install poetry
-  - poetry install
+  - pip install -e .[dev]
 
 script:
-  - poetry run green -v ./tests
-
+  - green -vv -a ./tests
