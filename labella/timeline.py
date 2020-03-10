@@ -62,7 +62,7 @@ DEFAULT_OPTIONS = {
         "tickCross": False,
         "preamble": "",
         "latexmkOptions": [],
-        "reproducible": False
+        "reproducible": False,
     },
 }
 
@@ -310,7 +310,7 @@ class TimelineSVG(Timeline):
         self.renderer = None
         super().__init__(items, options=options, output_mode="svg")
 
-    def export(self, filename):
+    def export(self, filename=None):
         self.nodes, self.renderer = self.compute()
         initWidth, initHeight = (
             self.options["initialWidth"],
@@ -330,8 +330,9 @@ class TimelineSVG(Timeline):
         self.add_labels(mainLayer)
         self.add_dots(mainLayer)
         svglines = ElementTree.tostring(doc)
-        with open(filename, "wb") as fid:
-            fid.write(svglines)
+        if filename is None:
+            with open(filename, "wb") as fid:
+                fid.write(svglines)
         return svglines
 
     def getTranslation(self):
@@ -507,7 +508,7 @@ class TimelineTex(Timeline):
         self.renderer = None
         super().__init__(items, options=options, output_mode="tex")
 
-    def export(self, filename, build_pdf=True):
+    def export(self, filename=None, build_pdf=True):
         self.nodes, self.renderer = self.compute()
 
         doc = []
@@ -525,6 +526,9 @@ class TimelineTex(Timeline):
         self.add_footer(doc)
 
         texlines = "\n".join(doc)
+        if filename is None:
+            return texlines
+
         with open(filename, "w") as fid:
             fid.write(texlines)
         if build_pdf:
@@ -546,12 +550,14 @@ class TimelineTex(Timeline):
             self.options["margin"]["top"],
         )
         fontsize = self.options["latex"]["fontsize"]
-        repro = '\n'.join([
-            "\\pdfinfoomitdate=1",
-            "\\pdftrailerid{}",
-            "\\pdfsuppressptexinfo=1",
-            "\\pdfinfo{ /Creator () /Producer () }",
-        ])
+        repro = "\n".join(
+            [
+                "\\pdfinfoomitdate=1",
+                "\\pdftrailerid{}",
+                "\\pdfsuppressptexinfo=1",
+                "\\pdfinfo{ /Creator () /Producer () }",
+            ]
+        )
         txt = [
             "\\documentclass[border={%s}, %s]{standalone}"
             % (border, fontsize),
