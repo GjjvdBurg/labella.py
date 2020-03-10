@@ -1,5 +1,11 @@
 # Changelog
 
+## Version 0.9.6
+
+* Optionally do not write the output of the ``export()`` method of the 
+  Timeline object to a file, but just return the generated output (svg or 
+  tex).
+
 ## Version 0.9.5
 
 * Add a ``reproducible`` flag to the latex options, for reproducible PDF 
