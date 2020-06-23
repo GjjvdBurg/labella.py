@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 0.9.7
+
+* Fix the floating point accuracy of coordinates of the generated paths. This 
+  will help getting reproducible results.
+
 ## Version 0.9.6
 
 * Optionally do not write the output of the ``export()`` method of the 
