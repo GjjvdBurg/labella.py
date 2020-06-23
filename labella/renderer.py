@@ -9,17 +9,17 @@ License: Apache-2.0
 
 
 def lineTo(point):
-    return "L " + " ".join([str(x) for x in point])
+    return "L " + " ".join(["%.8f" % x for x in point])
 
 
 def moveTo(point):
-    return "M " + " ".join([str(x) for x in point])
+    return "M " + " ".join(["%.8f" % x for x in point])
 
 
 def curveTo(c1, c2, point2):
-    c1str = " ".join([str(x) for x in c1])
-    c2str = " ".join([str(x) for x in c2])
-    ptstr = " ".join([str(x) for x in point2])
+    c1str = " ".join(["%.8f" % x for x in c1])
+    c2str = " ".join(["%.8f" % x for x in c2])
+    ptstr = " ".join(["%.8f" % x for x in point2])
     return "C " + c1str + " " + c2str + " " + ptstr
 
 
