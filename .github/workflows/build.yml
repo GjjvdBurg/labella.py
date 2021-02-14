@@ -27,4 +27,4 @@ jobs:
 
       - name: Build
         shell: bash
-        run: make test
+        run: bash -c "make test"
