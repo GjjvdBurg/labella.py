@@ -26,5 +26,4 @@ jobs:
         run: sudo apt-get install texlive latexmk
 
       - name: Build
-        shell: bash
-        run: bash -c "make test"
+        run: make test
