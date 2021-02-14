@@ -6,7 +6,8 @@ SVGS = $(patsubst %.py,%.svg,$(EXAMPLES))
 
 all: $(PDFS) $(SVGS)
 
-%.pdf %.svg &: %.py
+#%.pdf %.svg &: %.py ## not yet supported by Make version on GH actions
+%.pdf: %.py
 	python $<
 
 clean:
