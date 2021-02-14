@@ -43,6 +43,7 @@ def main():
             "algorithm": "simple",
         },
         "labelPadding": {"left": 0, "right": 2, "top": 0, "bottom": 0},
+        "latex": {"reproducible": True}
     }
 
     tl = TimelineSVG(data, options=options)

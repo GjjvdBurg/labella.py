@@ -56,7 +56,7 @@ def main():
         "labella": {
             "nodeHeight": 12,
         },
-        "latex": {"fontsize": "12pt"},
+        "latex": {"fontsize": "12pt", "reproducible": True},
     }
 
     tl = TimelineSVG(items, options=options)

@@ -70,6 +70,7 @@ def main():
         "margin": {"left": 20, "right": 20, "top": 20, "bottom": 30},
         "layerGap": 40,
         "labella": {"maxPos": 800, "algorithm": "simple"},
+        "latex": {"reproducible": True}
     }
 
     tl = TimelineSVG(items, options=options)

@@ -38,6 +38,7 @@ def main():
         "labelPadding": {"left": 0, "right": 0, "top": 0, "bottom": 0},
         "labella": {"minPos": 0, "maxPos": 960, "nodeHeight": 12},
         "showTicks": False,
+        "latex": {"reproducible": True}
     }
 
     tl = TimelineSVG(items, options=options)
