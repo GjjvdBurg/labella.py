@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.9.8
+
+* Fix TimelineSVG export (thanks to @sdvillal!)
+
 ## Version 0.9.7
 
 * Fix the floating point accuracy of coordinates of the generated paths. This 
