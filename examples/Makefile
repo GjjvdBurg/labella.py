@@ -1,11 +1,12 @@
 EXAMPLES=$(wildcard *.py)
 PDFS = $(patsubst %.py,%.pdf,$(EXAMPLES))
+SVGS = $(patsubst %.py,%.svg,$(EXAMPLES))
 
 .PHONY: all clean
 
-all: $(PDFS)
+all: $(PDFS) $(SVGS)
 
-%.pdf: %.py
+%.pdf %.svg &: %.py
 	python $<
 
 clean:
