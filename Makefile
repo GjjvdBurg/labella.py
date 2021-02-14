@@ -2,6 +2,10 @@
 #
 # Uses self-documenting macros from here:
 # http://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
+#
+.SHELL := bash
+.SHELLFLAGS := -eu -o -pipefail -c
+MAKEFLAGS += --no-buitin-rules
 
 PACKAGE=labella
 EXAMPLE_DIR=examples
@@ -25,6 +29,8 @@ install: ## Install for the current user using the default python command
 
 test: venv ## Run nosetests using the default nosetests command
 	source $(VENV_DIR)/bin/activate && green -vv -a ./tests
+	source $(VENV_DIR)/bin/activate && $(MAKE) -C $(EXAMPLE_DIR) all && \
+		git diff --exit-code $(EXAMPLE_DIR)
 
 clean: ## Clean build dist and egg directories left after install
 	rm -rf ./dist
