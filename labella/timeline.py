@@ -330,7 +330,7 @@ class TimelineSVG(Timeline):
         self.add_labels(mainLayer)
         self.add_dots(mainLayer)
         svglines = ElementTree.tostring(doc)
-        if filename is None:
+        if filename is not None:
             with open(filename, "wb") as fid:
                 fid.write(svglines)
         return svglines
