@@ -5,6 +5,12 @@ labella.py
 .. image:: https://github.com/GjjvdBurg/labella.py/workflows/build/badge.svg
     :target: https://github.com/GjjvdBurg/labella.py/actions?query=workflow%3Abuild
 
+.. image:: https://badge.fury.io/py/labella.svg
+   :target: https://pypi.org/project/labella
+
+.. image:: https://pepy.tech/badge/labella
+   :target: https://pepy.tech/project/labella
+
 Labella.py is a Python 3 clone of `labella.js 
 <https://github.com/twitter/labella.js>`_ that supports all the features of 
 labella.js and addionally can generate TikZ PDF
