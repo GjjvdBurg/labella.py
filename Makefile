@@ -29,6 +29,9 @@ install: ## Install for the current user using the default python command
 
 test: venv ## Run nosetests using the default nosetests command
 	source $(VENV_DIR)/bin/activate && green -vv -a ./tests
+	source $(VENV_DIR)/bin/activate && \
+		$(MAKE) -C $(EXAMPLE_DIR) clean && \
+		$(MAKE) -C $(EXAMPLE_DIR) all
 
 clean: ## Clean build dist and egg directories left after install
 	rm -rf ./dist
