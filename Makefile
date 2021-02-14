@@ -2,6 +2,10 @@
 #
 # Uses self-documenting macros from here:
 # http://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
+#
+SHELL := bash
+.SHELLFLAGS := -eu -o pipefail -c
+MAKEFLAGS += --no-builtin-rules
 
 PACKAGE=labella
 EXAMPLE_DIR=examples
@@ -45,7 +49,7 @@ examples: install
 venv: $(VENV_DIR)/bin/activate
 
 $(VENV_DIR)/bin/activate:
-	test -d $(VENV_DIR) || virtualenv $(VENV_DIR)
+	test -d $(VENV_DIR) || python -m venv $(VENV_DIR)
 	source $(VENV_DIR)/bin/activate && pip install -e .[dev]
 	touch $(VENV_DIR)/bin/activate
 

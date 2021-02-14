@@ -1,0 +1,29 @@
+name: build
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: 56 8 * * */14
+
+jobs:
+  python:
+    name: Testing Labella.py
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        py: [ '3.6', '3.9' ]
+    steps:
+      - name: Install Python ${{ matrix.py }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.py }}
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install system dependencies
+        run: sudo apt-get install texlive latexmk
+
+      - name: Build
+        run: make test

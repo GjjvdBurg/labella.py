@@ -2,9 +2,8 @@
 labella.py
 ==========
 
-.. image:: https://travis-ci.org/GjjvdBurg/labella.py.svg?branch=master
-    :target: https://travis-ci.org/GjjvdBurg/labella.py
-
+.. image:: https://github.com/GjjvdBurg/labella.py/workflows/build/badge.svg
+    :target: https://github.com/GjjvdBurg/labella.py/actions?query=workflow%3Abuild
 
 Labella.py is a Python 3 clone of `labella.js 
 <https://github.com/twitter/labella.js>`_ that supports all the features of 
