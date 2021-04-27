@@ -20,7 +20,7 @@ Options that are new and not part of
 | textXOffset | 0.15em | horizontal offset for text within a label, used for SVG output |
 | showTicks | True | boolean for showing ticks on the axis |
 | showBorder | False | boolean for showing border around a label |
-| borderColor | #000 | color of the border around a label |
+| borderColor | #000 | color of the border around a label (remember to set ``showBorder`` to True)|
 | latex | (see below) | options for LaTeX, see below. |
 
 Options for LaTeX are:
@@ -52,7 +52,9 @@ with text can be created by supplying a 'text' field in the dict. If this is
 the case and no 'width' field is specified, the width is calculated 
 automatically (see Width Calculation below). Other data can be incorporated in 
 the dict, which can for instance be used by the `textFn` function, and those 
-for determining colors.
+for determining colors. You can also use the ``textFn`` function to style the 
+labels (see for instance 
+[#12](https://github.com/GjjvdBurg/labella.py/issues/12)).
 
 Note that if a `datetime.date` or a `datetime.time` object is specified they 
 will be converted internally to a full `datetime.datetime` object for use in 
