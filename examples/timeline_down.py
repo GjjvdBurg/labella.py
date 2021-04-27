@@ -39,8 +39,8 @@ def main():
         "labella": {"minPos": 0, "maxPos": 960},
         "showTicks": False,
         "latex": {
-        "reproducible": True,
-        }
+            "reproducible": True,
+        },
     }
 
     tl = TimelineSVG(items, options=options)

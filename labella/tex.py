@@ -76,14 +76,22 @@ def get_latex_fontdoc(text, fontsize="11pt", preamble=""):
     )
     return tex
 
+
 def compile_latex(fname, tmpdirname, latexmk_options, silent=True):
-    compiler = 'latexmk'
+    compiler = "latexmk"
     if latexmk_options:
-        compiler_args = latexmk_options +  ['--outdir=' + tmpdirname,
-                '--interaction=nonstopmode', fname]
+        compiler_args = latexmk_options + [
+            "--outdir=" + tmpdirname,
+            "--interaction=nonstopmode",
+            fname,
+        ]
     else:
-        compiler_args = ['--pdf','--outdir=' + tmpdirname,
-                '--interaction=nonstopmode', fname]
+        compiler_args = [
+            "--pdf",
+            "--outdir=" + tmpdirname,
+            "--interaction=nonstopmode",
+            fname,
+        ]
     command = [compiler] + compiler_args
     try:
         output = subprocess.check_output(command, stderr=subprocess.STDOUT)
@@ -95,6 +103,7 @@ def compile_latex(fname, tmpdirname, latexmk_options, silent=True):
     else:
         if not silent:
             print(output.decode())
+
 
 def get_latex_dims(tex, latexmk_options, silent=True):
     with tempfile.TemporaryDirectory() as tmpdirname:
@@ -120,6 +129,7 @@ def get_latex_dims(tex, latexmk_options, silent=True):
         height = line_height.strip().split(":")[-1].strip().rstrip("pt")
     return float(width), float(height)
 
+
 def build_latex_doc(tex, latexmk_options, output_name=None, silent=True):
     with tempfile.TemporaryDirectory() as tmpdirname:
         basename = "labella_text"
@@ -133,9 +143,12 @@ def build_latex_doc(tex, latexmk_options, output_name=None, silent=True):
         if output_name:
             shutil.copy2(pdfname, output_name)
 
-def text_dimensions(text, fontsize='11pt', preamble='', silent=True,
-                    latexmk_options=None):
+
+def text_dimensions(
+    text, fontsize="11pt", preamble="", silent=True, latexmk_options=None
+):
     tex = get_latex_fontdoc(text, fontsize=fontsize, preamble=preamble)
-    width, height = get_latex_dims(tex, silent=silent, 
-                     latexmk_options=latexmk_options)
+    width, height = get_latex_dims(
+        tex, silent=silent, latexmk_options=latexmk_options
+    )
     return width, height

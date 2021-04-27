@@ -42,7 +42,7 @@ def main():
             "nodeHeight": 12,
         },
         "showTicks": False,
-        "latex": {"reproducible": True}
+        "latex": {"reproducible": True},
     }
 
     tl = TimelineSVG(items, options=options)
