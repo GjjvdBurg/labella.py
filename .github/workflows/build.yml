@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Install system dependencies
-        run: sudo apt-get install texlive latexmk texlive-latex-extra
+        run: sudo apt-get update && sudo apt-get install texlive latexmk texlive-latex-extra
 
       - name: Build
         run: make test
