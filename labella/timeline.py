@@ -100,7 +100,12 @@ class Item(object):
 
     def get_text_dimensions(self):
         if self.output_mode == "svg":
-            width, height = text_dimensions(self.text, fontsize="12pt")
+            width, height = text_dimensions(
+                self.text,
+                fontsize="12pt",
+                preamble=self.tex_preamble,
+                latexmk_options=self.latexmk_options,
+            )
             width = math.ceil(width)
             height = 14.0
         else:
