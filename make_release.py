@@ -12,12 +12,12 @@ Date: 2019-07-23
 
 """
 
-import colorama
 import os
 import sys
 import tempfile
 import webbrowser
 
+import colorama
 
 URLS = {
     "CI": "https://github.com/GjjvdBurg/labella.py/actions",

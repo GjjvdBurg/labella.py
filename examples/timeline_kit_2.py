@@ -5,7 +5,8 @@
 
 from datetime import date
 
-from labella.timeline import TimelineSVG, TimelineTex
+from labella.timeline import TimelineSVG
+from labella.timeline import TimelineTex
 
 
 def main():

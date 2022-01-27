@@ -10,7 +10,8 @@ License: Apache-2.0
 import math
 
 from copy import deepcopy
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 
 d3_time = {}
 

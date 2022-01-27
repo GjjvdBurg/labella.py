@@ -83,7 +83,7 @@ def hex2html(code):
 
 
 def int2name(i):
-    """ Convert integer to Excel column name. """
+    """Convert integer to Excel column name."""
     div = i + 1
     name = ""
     while div > 0:

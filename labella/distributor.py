@@ -9,6 +9,7 @@ License: Apache-2.0
 
 
 from math import ceil
+
 from intervaltree import IntervalTree
 
 DEFAULT_OPTIONS = {

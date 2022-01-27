@@ -8,8 +8,8 @@ License: Apache-2.0
 """
 
 from . import distributor
-from . import removeOverlap
 from . import metrics
+from . import removeOverlap
 
 DEFAULT_OPTIONS = {
     "nodeSpacing": 3,

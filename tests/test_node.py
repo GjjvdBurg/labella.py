@@ -1,10 +1,9 @@
-
 import unittest
 
 from labella.node import Node
 
-class NodeTestCase(unittest.TestCase):
 
+class NodeTestCase(unittest.TestCase):
     def test_no_overlap(self):
         n1 = Node(10, 10)
         n2 = Node(30, 10)
@@ -145,15 +144,16 @@ class NodeTestCase(unittest.TestCase):
         self.assertEqual(n1.getLayerIndex(), 10)
 
     def test_clone(self):
-        n1 = Node(10, 11, 'a')
+        n1 = Node(10, 11, "a")
         n1.currentPos = 20
         n1.layerIndex = 3
         n2 = n1.clone()
         self.assertEqual(n2.idealPos, 10)
         self.assertEqual(n2.width, 11)
-        self.assertEqual(n2.data, 'a')
+        self.assertEqual(n2.data, "a")
         self.assertEqual(n2.currentPos, 20)
         self.assertEqual(n2.layerIndex, 3)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

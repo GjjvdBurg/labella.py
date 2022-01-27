@@ -25,9 +25,14 @@ from xml.etree import ElementTree
 from labella.force import Force
 from labella.node import Node
 from labella.renderer import Renderer
-from labella.scale import TimeScale, d3_extent
-from labella.tex import text_dimensions, build_latex_doc, uni2tex
-from labella.utils import int2name, hex2rgbstr, hex2html
+from labella.scale import TimeScale
+from labella.scale import d3_extent
+from labella.tex import build_latex_doc
+from labella.tex import text_dimensions
+from labella.tex import uni2tex
+from labella.utils import hex2html
+from labella.utils import hex2rgbstr
+from labella.utils import int2name
 
 DEFAULT_WIDTH = 50
 

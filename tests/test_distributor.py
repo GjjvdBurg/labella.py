@@ -1,175 +1,180 @@
-
 import unittest
 
 from labella.distributor import Distributor
 from labella.node import Node
 
-class DistributorTestCase(unittest.TestCase):
 
+class DistributorTestCase(unittest.TestCase):
     def test_computeRequiredWidth_1(self):
         options = {
-                'algorithm': 'overlap',
-                'layerWidth': 960,
-                'density': 0.85,
-                'nodeSpacing': 3,
-                'stubWidth': 1
-                }
+            "algorithm": "overlap",
+            "layerWidth": 960,
+            "density": 0.85,
+            "nodeSpacing": 3,
+            "stubWidth": 1,
+        }
         nodes = [
-                Node(1, 50),
-                Node(2, 50),
-                Node(3, 50),
-                Node(3, 50),
-                Node(3, 50),
-                Node(304, 50),
-                Node(454, 50),
-                Node(454, 50),
-                Node(454, 50),
-                Node(804, 50),
-                Node(804, 70),
-                Node(804, 50),
-                Node(804, 50),
-                Node(854, 50),
-                Node(854, 50)]
+            Node(1, 50),
+            Node(2, 50),
+            Node(3, 50),
+            Node(3, 50),
+            Node(3, 50),
+            Node(304, 50),
+            Node(454, 50),
+            Node(454, 50),
+            Node(454, 50),
+            Node(804, 50),
+            Node(804, 70),
+            Node(804, 50),
+            Node(804, 50),
+            Node(854, 50),
+            Node(854, 50),
+        ]
         exp_out = 812
         dist = Distributor(options)
         self.assertEqual(exp_out, dist.computeRequiredWidth(nodes))
 
     def test_computeRequiredWidth_2(self):
         options = {
-                'algorithm': 'overlap',
-                'layerWidth': 960,
-                'density': 0.85,
-                'nodeSpacing': 3,
-                'stubWidth': 1
-                }
+            "algorithm": "overlap",
+            "layerWidth": 960,
+            "density": 0.85,
+            "nodeSpacing": 3,
+            "stubWidth": 1,
+        }
         nodes = [
-                Node(1,   100),
-                Node(2,   100),
-                Node(3,   100),
-                Node(3,   100),
-                Node(3,   100),
-                Node(304, 100),
-                Node(454, 100),
-                Node(454, 100),
-                Node(454, 100),
-                Node(804, 100),
-                Node(804, 100),
-                Node(804, 100),
-                Node(804, 100),
-                Node(854, 100),
-                Node(854, 100)]
+            Node(1, 100),
+            Node(2, 100),
+            Node(3, 100),
+            Node(3, 100),
+            Node(3, 100),
+            Node(304, 100),
+            Node(454, 100),
+            Node(454, 100),
+            Node(454, 100),
+            Node(804, 100),
+            Node(804, 100),
+            Node(804, 100),
+            Node(804, 100),
+            Node(854, 100),
+            Node(854, 100),
+        ]
         exp_out = 1542
         dist = Distributor(options)
         self.assertEqual(exp_out, dist.computeRequiredWidth(nodes))
 
     def test_estimatedRequiredLayers_1(self):
         options = {
-                'algorithm': 'overlap',
-                'layerWidth': 960,
-                'density': 0.85,
-                'nodeSpacing': 3,
-                'stubWidth': 1
-                }
+            "algorithm": "overlap",
+            "layerWidth": 960,
+            "density": 0.85,
+            "nodeSpacing": 3,
+            "stubWidth": 1,
+        }
         nodes = [
-                Node(1, 50),
-                Node(2, 50),
-                Node(3, 50),
-                Node(3, 50),
-                Node(3, 50),
-                Node(304, 50),
-                Node(454, 50),
-                Node(454, 50),
-                Node(454, 50),
-                Node(804, 50),
-                Node(804, 70),
-                Node(804, 50),
-                Node(804, 50),
-                Node(854, 50),
-                Node(854, 50)]
+            Node(1, 50),
+            Node(2, 50),
+            Node(3, 50),
+            Node(3, 50),
+            Node(3, 50),
+            Node(304, 50),
+            Node(454, 50),
+            Node(454, 50),
+            Node(454, 50),
+            Node(804, 50),
+            Node(804, 70),
+            Node(804, 50),
+            Node(804, 50),
+            Node(854, 50),
+            Node(854, 50),
+        ]
         exp_out = 1
         dist = Distributor(options)
         self.assertEqual(exp_out, dist.estimateRequiredLayers(nodes))
 
     def test_estimateRequiredLayers_2(self):
         options = {
-                'algorithm': 'overlap',
-                'layerWidth': 960,
-                'density': 0.85,
-                'nodeSpacing': 3,
-                'stubWidth': 1
-                }
+            "algorithm": "overlap",
+            "layerWidth": 960,
+            "density": 0.85,
+            "nodeSpacing": 3,
+            "stubWidth": 1,
+        }
         nodes = [
-                Node(1,   100),
-                Node(2,   100),
-                Node(3,   100),
-                Node(3,   100),
-                Node(3,   100),
-                Node(304, 100),
-                Node(454, 100),
-                Node(454, 100),
-                Node(454, 100),
-                Node(804, 100),
-                Node(804, 100),
-                Node(804, 100),
-                Node(804, 100),
-                Node(854, 100),
-                Node(854, 100)]
+            Node(1, 100),
+            Node(2, 100),
+            Node(3, 100),
+            Node(3, 100),
+            Node(3, 100),
+            Node(304, 100),
+            Node(454, 100),
+            Node(454, 100),
+            Node(454, 100),
+            Node(804, 100),
+            Node(804, 100),
+            Node(804, 100),
+            Node(804, 100),
+            Node(854, 100),
+            Node(854, 100),
+        ]
         exp_out = 2
         dist = Distributor(options)
         self.assertEqual(exp_out, dist.estimateRequiredLayers(nodes))
 
     def test_estimateRequiredLayers_3(self):
         options = {
-                'algorithm': 'overlap',
-                'layerWidth': None,
-                'density': 0.85,
-                'nodeSpacing': 3,
-                'stubWidth': 1
-                }
+            "algorithm": "overlap",
+            "layerWidth": None,
+            "density": 0.85,
+            "nodeSpacing": 3,
+            "stubWidth": 1,
+        }
         nodes = [
-                Node(1,   100),
-                Node(2,   100),
-                Node(3,   100),
-                Node(3,   100),
-                Node(3,   100),
-                Node(304, 100),
-                Node(454, 100),
-                Node(454, 100),
-                Node(454, 100),
-                Node(804, 100),
-                Node(804, 100),
-                Node(804, 100),
-                Node(804, 100),
-                Node(854, 100),
-                Node(854, 100)]
+            Node(1, 100),
+            Node(2, 100),
+            Node(3, 100),
+            Node(3, 100),
+            Node(3, 100),
+            Node(304, 100),
+            Node(454, 100),
+            Node(454, 100),
+            Node(454, 100),
+            Node(804, 100),
+            Node(804, 100),
+            Node(804, 100),
+            Node(804, 100),
+            Node(854, 100),
+            Node(854, 100),
+        ]
         exp_out = 1
         dist = Distributor(options)
         self.assertEqual(exp_out, dist.estimateRequiredLayers(nodes))
 
     def test_countIdealOverlaps(self):
         options = {
-                'algorithm': 'overlap',
-                'layerWidth': 960,
-                'density': 0.85,
-                'nodeSpacing': 3,
-                'stubWidth': 1
-                }
+            "algorithm": "overlap",
+            "layerWidth": 960,
+            "density": 0.85,
+            "nodeSpacing": 3,
+            "stubWidth": 1,
+        }
         nodes = [
-                Node(1,   100),
-                Node(2,   100),
-                Node(3,   100),
-                Node(3,   100),
-                Node(3,   100),
-                Node(304, 100),
-                Node(454, 100),
-                Node(454, 100),
-                Node(454, 100),
-                Node(804, 100),
-                Node(804, 100),
-                Node(804, 100),
-                Node(804, 100),
-                Node(854, 100),
-                Node(854, 100)]
+            Node(1, 100),
+            Node(2, 100),
+            Node(3, 100),
+            Node(3, 100),
+            Node(3, 100),
+            Node(304, 100),
+            Node(454, 100),
+            Node(454, 100),
+            Node(454, 100),
+            Node(804, 100),
+            Node(804, 100),
+            Node(804, 100),
+            Node(804, 100),
+            Node(854, 100),
+            Node(854, 100),
+        ]
         dist = Distributor(options)
         exp_out = [5, 5, 5, 5, 5, 1, 3, 3, 3, 6, 6, 6, 6, 6, 6]
         dist.countIdealOverlaps(nodes)
@@ -178,29 +183,30 @@ class DistributorTestCase(unittest.TestCase):
 
     def test_algorithm_simple_1(self):
         options = {
-                'algorithm': 'simple',
-                'layerWidth': 960,
-                'density': 0.85,
-                'nodeSpacing': 3,
-                'stubWidth': 1
-                }
+            "algorithm": "simple",
+            "layerWidth": 960,
+            "density": 0.85,
+            "nodeSpacing": 3,
+            "stubWidth": 1,
+        }
         nodes = [
-                Node(1,   100),  #  0
-                Node(2,   100),  #  1
-                Node(3,   100),  #  2
-                Node(3,   100),  #  3
-                Node(3,   100),  #  4
-                Node(304, 100),  #  5
-                Node(454, 100),  #  6
-                Node(454, 100),  #  7
-                Node(454, 100),  #  8
-                Node(804, 100),  #  9
-                Node(804, 100),  # 10
-                Node(804, 100),  # 11
-                Node(804, 100),  # 12
-                Node(854, 100),  # 13
-                Node(854, 100)]  # 14
-        nodedict = {i:n for i, n in enumerate(nodes)}
+            Node(1, 100),  #  0
+            Node(2, 100),  #  1
+            Node(3, 100),  #  2
+            Node(3, 100),  #  3
+            Node(3, 100),  #  4
+            Node(304, 100),  #  5
+            Node(454, 100),  #  6
+            Node(454, 100),  #  7
+            Node(454, 100),  #  8
+            Node(804, 100),  #  9
+            Node(804, 100),  # 10
+            Node(804, 100),  # 11
+            Node(804, 100),  # 12
+            Node(854, 100),  # 13
+            Node(854, 100),
+        ]  # 14
+        nodedict = {i: n for i, n in enumerate(nodes)}
         dist = Distributor(options)
         layers = dist.distribute(nodes)
 
@@ -230,29 +236,30 @@ class DistributorTestCase(unittest.TestCase):
 
     def test_algorithm_simple_2(self):
         options = {
-                'algorithm': 'simple',
-                'layerWidth': 960,
-                'density': 0.85,
-                'nodeSpacing': 3,
-                'stubWidth': 1
-                }
+            "algorithm": "simple",
+            "layerWidth": 960,
+            "density": 0.85,
+            "nodeSpacing": 3,
+            "stubWidth": 1,
+        }
         nodes = [
-                Node(1,   100),  #  0
-                Node(2,   200),  #  1
-                Node(3,   100),  #  2
-                Node(3,   200),  #  3
-                Node(3,   50),  #  4
-                Node(304, 200),  #  5
-                Node(454, 50),  #  6
-                Node(454, 200),  #  7
-                Node(454, 90),  #  8
-                Node(804, 200),  #  9
-                Node(804, 90),  # 10
-                Node(804, 200),  # 11
-                Node(804, 50),  # 12
-                Node(854, 200),  # 13
-                Node(854, 70)]  # 14
-        nodedict = {i:n for i, n in enumerate(nodes)}
+            Node(1, 100),  #  0
+            Node(2, 200),  #  1
+            Node(3, 100),  #  2
+            Node(3, 200),  #  3
+            Node(3, 50),  #  4
+            Node(304, 200),  #  5
+            Node(454, 50),  #  6
+            Node(454, 200),  #  7
+            Node(454, 90),  #  8
+            Node(804, 200),  #  9
+            Node(804, 90),  # 10
+            Node(804, 200),  # 11
+            Node(804, 50),  # 12
+            Node(854, 200),  # 13
+            Node(854, 70),
+        ]  # 14
+        nodedict = {i: n for i, n in enumerate(nodes)}
         dist = Distributor(options)
         layers = dist.distribute(nodes)
 
@@ -290,29 +297,30 @@ class DistributorTestCase(unittest.TestCase):
 
     def test_algorithm_overlap_1(self):
         options = {
-                'algorithm': 'overlap',
-                'layerWidth': 960,
-                'density': 0.85,
-                'nodeSpacing': 3,
-                'stubWidth': 1
-                }
+            "algorithm": "overlap",
+            "layerWidth": 960,
+            "density": 0.85,
+            "nodeSpacing": 3,
+            "stubWidth": 1,
+        }
         nodes = [
-                Node(1,   100),  #  0
-                Node(2,   100),  #  1
-                Node(3,   99),  #  2
-                Node(3,   100),  #  3
-                Node(3,   101),  #  4
-                Node(304, 100),  #  5
-                Node(454, 99),  #  6
-                Node(454, 100),  #  7
-                Node(454, 101),  #  8
-                Node(804, 98),  #  9
-                Node(804, 99),  # 10
-                Node(804, 100),  # 11
-                Node(804, 101),  # 12
-                Node(854, 99),  # 13
-                Node(854, 100)]  # 14
-        nodedict = {i:n for i, n in enumerate(nodes)}
+            Node(1, 100),  #  0
+            Node(2, 100),  #  1
+            Node(3, 99),  #  2
+            Node(3, 100),  #  3
+            Node(3, 101),  #  4
+            Node(304, 100),  #  5
+            Node(454, 99),  #  6
+            Node(454, 100),  #  7
+            Node(454, 101),  #  8
+            Node(804, 98),  #  9
+            Node(804, 99),  # 10
+            Node(804, 100),  # 11
+            Node(804, 101),  # 12
+            Node(854, 99),  # 13
+            Node(854, 100),
+        ]  # 14
+        nodedict = {i: n for i, n in enumerate(nodes)}
         dist = Distributor(options)
         layers = dist.distribute(nodes)
 
@@ -345,29 +353,30 @@ class DistributorTestCase(unittest.TestCase):
 
     def test_algorithm_overlap_2(self):
         options = {
-                'algorithm': 'overlap',
-                'layerWidth': 960,
-                'density': 0.85,
-                'nodeSpacing': 3,
-                'stubWidth': 1
-                }
+            "algorithm": "overlap",
+            "layerWidth": 960,
+            "density": 0.85,
+            "nodeSpacing": 3,
+            "stubWidth": 1,
+        }
         nodes = [
-                Node(1,   100),  #  0
-                Node(2,   200),  #  1
-                Node(3,   100),  #  2
-                Node(3,   200),  #  3
-                Node(3,   50),   #  4
-                Node(304, 200),  #  5
-                Node(454, 50),   #  6
-                Node(454, 200),  #  7
-                Node(454, 90),   #  8
-                Node(804, 200),  #  9
-                Node(804, 90),   # 10
-                Node(804, 200),  # 11
-                Node(804, 50),   # 12
-                Node(854, 200),  # 13
-                Node(854, 70)]   # 14
-        nodedict = {i:n for i, n in enumerate(nodes)}
+            Node(1, 100),  #  0
+            Node(2, 200),  #  1
+            Node(3, 100),  #  2
+            Node(3, 200),  #  3
+            Node(3, 50),  #  4
+            Node(304, 200),  #  5
+            Node(454, 50),  #  6
+            Node(454, 200),  #  7
+            Node(454, 90),  #  8
+            Node(804, 200),  #  9
+            Node(804, 90),  # 10
+            Node(804, 200),  # 11
+            Node(804, 50),  # 12
+            Node(854, 200),  # 13
+            Node(854, 70),
+        ]  # 14
+        nodedict = {i: n for i, n in enumerate(nodes)}
         dist = Distributor(options)
         layers = dist.distribute(nodes)
 
@@ -403,5 +412,5 @@ class DistributorTestCase(unittest.TestCase):
         self.assertEqual(layers[2][3], nodedict[10])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

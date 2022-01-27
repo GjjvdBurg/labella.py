@@ -1,10 +1,9 @@
-
 import unittest
 
 from labella.scale import LinearScale
 
-class LinearScaleTestCase(unittest.TestCase):
 
+class LinearScaleTestCase(unittest.TestCase):
     def test_domain_1(self):
         # defaults to [0, 1]
         x = LinearScale()

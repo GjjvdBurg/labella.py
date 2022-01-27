@@ -4,7 +4,8 @@ Basic timeline example in the down direction with multiple layers.
 """
 
 from labella.scale import LinearScale
-from labella.timeline import TimelineSVG, TimelineTex
+from labella.timeline import TimelineSVG
+from labella.timeline import TimelineTex
 from labella.utils import COLOR_10
 
 

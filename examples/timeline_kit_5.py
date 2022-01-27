@@ -4,7 +4,8 @@
 """
 
 from labella.scale import LinearScale
-from labella.timeline import TimelineSVG, TimelineTex
+from labella.timeline import TimelineSVG
+from labella.timeline import TimelineTex
 
 
 def color5(d):
